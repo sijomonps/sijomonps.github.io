@@ -14,7 +14,7 @@ export default function Hero() {
       className="relative min-h-screen px-6 pt-28 pb-14 sm:px-12"
     >
       <FloatingElements />
-      <main className="relative z-10 mx-auto flex min-h-[calc(100vh-7rem)] w-full max-w-5xl flex-col justify-center space-y-7">
+      <main className="relative z-10 mx-auto flex min-h-[calc(100vh-7rem)] w-full max-w-3xl flex-col justify-center space-y-7">
         <AnimatedText className="flex flex-col items-start gap-3 text-left">
           <Image
             className="rounded-full"
