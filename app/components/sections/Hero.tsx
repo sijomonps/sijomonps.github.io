@@ -5,17 +5,20 @@ import AnimatedText from "../common/AnimatedText"
 import FloatingElements from "../common/FloatingElements"
 
 export default function Hero() {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
+  const assetPath = (path: string) => `${basePath}${path}`
+
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center px-6 pt-24 pb-16 sm:px-12"
+      className="relative min-h-screen px-6 pt-28 pb-14 sm:px-12"
     >
       <FloatingElements />
-      <main className="relative z-10 w-full max-w-5xl space-y-7">
+      <main className="relative z-10 mx-auto flex min-h-[calc(100vh-7rem)] w-full max-w-5xl flex-col justify-center space-y-7">
         <AnimatedText className="flex flex-col items-start gap-3 text-left">
           <Image
             className="rounded-full"
-            src="/avatar.jpg"
+            src={assetPath("/avatar.jpg")}
             alt="Profile Picture"
             width={104}
             height={104}
@@ -52,7 +55,7 @@ export default function Hero() {
           >
             <Image
               className="invert dark:invert-0 mr-2"
-              src="/github.svg"
+              src={assetPath("/github.svg")}
               alt="GitHub"
               width={20}
               height={20}
@@ -74,7 +77,7 @@ export default function Hero() {
           >
             <Image
               className="dark:invert mr-2"
-              src="/linkedin.svg"
+              src={assetPath("/linkedin.svg")}
               alt="LinkedIn"
               width={20}
               height={20}
@@ -94,7 +97,7 @@ export default function Hero() {
           >
             <Image
               className="dark:invert mr-2"
-              src="/mail.svg"
+              src={assetPath("/mail.svg")}
               alt="Email"
               width={20}
               height={20}
@@ -113,40 +116,40 @@ export default function Hero() {
           </a>
           <p>Open to internships and junior web developer roles</p>
         </AnimatedText>
-      </main>
 
-      <AnimatedText className="absolute bottom-6 left-6 flex gap-4 flex-wrap items-center text-xs text-foreground/70 sm:left-12">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="mailto:sijomon700@gmail.com"
-        >
-          <Image
-            aria-hidden
-            className="dark:invert"
-            src="/mail.svg"
-            alt="Email"
-            width={16}
-            height={16}
-          />
-          Send Email
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://www.linkedin.com/in/sijomonps/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            className="dark:invert"
-            src="/linkedin.svg"
-            alt="LinkedIn"
-            width={16}
-            height={16}
-          />
-          LinkedIn
-        </a>
-      </AnimatedText>
+        <AnimatedText className="flex flex-wrap items-center gap-4 pt-2 text-xs text-foreground/70">
+          <a
+            className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+            href="mailto:sijomon700@gmail.com"
+          >
+            <Image
+              aria-hidden
+              className="dark:invert"
+              src={assetPath("/mail.svg")}
+              alt="Email"
+              width={16}
+              height={16}
+            />
+            Send Email
+          </a>
+          <a
+            className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+            href="https://www.linkedin.com/in/sijomonps/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              aria-hidden
+              className="dark:invert"
+              src={assetPath("/linkedin.svg")}
+              alt="LinkedIn"
+              width={16}
+              height={16}
+            />
+            LinkedIn
+          </a>
+        </AnimatedText>
+      </main>
     </section>
   )
 }
