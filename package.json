@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next export",
+    "deploy": "npm run build && npx gh-pages -d out -b gh-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -27,6 +29,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"

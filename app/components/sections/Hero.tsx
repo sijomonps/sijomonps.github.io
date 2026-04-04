@@ -29,7 +29,7 @@ export default function Hero() {
           </p>
           <h1 className="text-2xl font-bold sm:text-3xl">Sijomon P S</h1>
           <p className="text-sm text-foreground/80 sm:text-base">
-            Aspiring Full-Stack Developer | MCA (IT) Student
+            Full-Stack Developer | MCA Student
           </p>
         </AnimatedText>
 
