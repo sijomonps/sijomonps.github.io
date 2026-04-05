@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from "framer-motion"
+import { motion, type Variants } from "framer-motion"
 
 interface AnimatedBlockProps {
   children: React.ReactNode
@@ -11,7 +11,7 @@ export default function AnimatedText({
   children,
   className = "",
 }: AnimatedBlockProps) {
-  const fadeInVariants = {
+  const fadeInVariants: Variants = {
     hidden: {
       opacity: 0,
       scale: 0.9,
@@ -25,7 +25,7 @@ export default function AnimatedText({
       rotateX: 0,
       transition: {
         duration: 0.8,
-        ease: [0.25, 0.1, 0.25, 1],
+        ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
         staggerChildren: 0.1
       }
     }
