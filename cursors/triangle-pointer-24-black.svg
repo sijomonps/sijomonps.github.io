@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <defs>
+    <linearGradient id="cursorFillDark" x1="1.5" y1="1.5" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M1 1L1 23L7.8 16.1L22.2 19.2L9.6 6.3L1 1Z"
+    fill="url(#cursorFillDark)"
+    stroke="#374151"
+    stroke-width="0.7"
+    stroke-linejoin="round"
+  />
+</svg>
