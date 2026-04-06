@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
-const basePath = isProd ? "/Portfolio.me" : "";
 
 const nextConfig: NextConfig = {
   output: "export",
@@ -10,14 +9,10 @@ const nextConfig: NextConfig = {
   },
   ...(isProd
     ? {
-        basePath,
-        assetPrefix: `${basePath}/`,
         trailingSlash: true,
       }
     : {}),
-  env: {
-    NEXT_PUBLIC_BASE_PATH: basePath,
-  },
+  // No basePath or assetPrefix needed for user/organization GitHub Pages
 };
 
 export default nextConfig;
