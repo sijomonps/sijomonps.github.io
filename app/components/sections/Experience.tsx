@@ -46,6 +46,8 @@ const strengths = [
   'Passion for building real-world projects',
 ]
 
+const certificatesUrl = 'https://www.linkedin.com/in/sijomonps/details/certifications/'
+
 export default function Experience() {
   return (
     <section id="experience" className="container mx-auto px-6 sm:px-10 md:px-12">
@@ -87,6 +89,17 @@ export default function Experience() {
             </AnimatedText>
           ))}
         </div>
+
+        <AnimatedText className="relative z-10 mt-8">
+          <a
+            href={certificatesUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-full border border-black/15 bg-white/75 px-5 py-2 text-sm font-semibold text-foreground transition hover:bg-white dark:border-white/20 dark:bg-black/45 dark:hover:bg-black/60"
+          >
+            View More Certificates
+          </a>
+        </AnimatedText>
 
         <AnimatedText className="relative z-10 mt-10 w-full max-w-6xl">
           <div className="rounded-2xl border border-black/10 bg-white/60 p-6 backdrop-blur-sm dark:border-white/15 dark:bg-white/[0.03]">

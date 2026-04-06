@@ -32,6 +32,7 @@ interface FloatingItem {
   side: 'left' | 'right'
   direction: { x: number, y: number }
   rotation: number
+  duration: number
 }
 
 function checkOverlap(
@@ -87,11 +88,18 @@ export default function FloatingElements() {
         ...pos,
         side,
         direction,
-        rotation: (Math.random() - 0.5) * 15 // 随机旋转角度
+        rotation: (Math.random() - 0.5) * 15, // 随机旋转角度
+        duration: 10 + Math.random() * 15,
       })
     })
-    
-    setElements(newElements)
+
+    const frameId = window.requestAnimationFrame(() => {
+      setElements(newElements)
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
   }, [])
 
   return (
@@ -113,7 +121,7 @@ export default function FloatingElements() {
         <motion.div
           key={item.id}
           className={`
-            absolute font-mono
+            absolute font-mono blur-[1.5px] sm:blur-0
             ${item.type === 'tech' && 'text-blue-400/60 text-base sm:text-lg'}
             ${item.type === 'project' && 'text-amber-400/60 text-lg sm:text-xl font-bold'}
             ${item.type === 'interest' && 'text-emerald-400/60 text-sm'}
@@ -137,7 +145,7 @@ export default function FloatingElements() {
             ]
           }}
           transition={{
-            duration: 10 + Math.random() * 15,
+            duration: item.duration,
             repeat: Infinity,
             ease: "linear"
           }}

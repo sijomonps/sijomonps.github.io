@@ -7,6 +7,7 @@ import FloatingElements from "../common/FloatingElements"
 export default function Hero() {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
   const assetPath = (path: string) => `${basePath}${path}`
+  const resumeUrl = "/Resume.pdf"
 
   return (
     <section
@@ -35,9 +36,9 @@ export default function Hero() {
 
         <AnimatedText className="max-w-3xl text-left">
           <p className="text-sm leading-relaxed text-foreground/80 sm:text-base">
-            I build practical, responsive web experiences that balance clean design with real user needs.
-            Currently, I am sharpening both frontend and backend skills through the NxtWave Full-Stack
-            program while pursuing my MCA in Information Technology.
+            Commerce to code — I chose curiosity over comfort. Now I build real web 
+            applications and look forward to growing fast by taking ownership in a 
+            small, driven team.
           </p>
         </AnimatedText>
 
@@ -120,33 +121,19 @@ export default function Hero() {
         <AnimatedText className="flex flex-wrap items-center gap-4 pt-2 text-xs text-foreground/70">
           <a
             className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-            href="mailto:sijomon700@gmail.com"
-          >
-            <Image
-              aria-hidden
-              className="dark:invert"
-              src={assetPath("/mail.svg")}
-              alt="Email"
-              width={16}
-              height={16}
-            />
-            Send Email
-          </a>
-          <a
-            className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-            href="https://www.linkedin.com/in/sijomonps/"
+            href={resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
             <Image
-              aria-hidden
-              className="dark:invert"
-              src={assetPath("/linkedin.svg")}
-              alt="LinkedIn"
-              width={16}
-              height={16}
+              className="dark:invert mr-2"
+              src={assetPath("/resume.svg")}
+              alt="Resume"
+              width={25}
+              height={20}
+              sizes="20px"
             />
-            LinkedIn
+            View Resume
           </a>
         </AnimatedText>
       </main>

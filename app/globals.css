@@ -5,13 +5,22 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --site-cursor: url('/cursors/triangle-pointer-24-black.svg');
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #171717;
+  --site-cursor: url('/cursors/triangle-pointer-24-black.svg');
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --site-cursor: url('/cursors/triangle-pointer-24.svg');
+  color-scheme: dark;
 }
 
 body {
@@ -27,3 +36,164 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+@media (pointer: fine) {
+  html,
+  body,
+  a,
+  button,
+  [role='button'],
+  summary,
+  label,
+  select {
+    cursor: var(--site-cursor) 1 1, default;
+  }
+
+  input,
+  textarea {
+    cursor: text;
+  }
+}
+
+.toggle-section-title-intro {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: clamp(2.1rem, 7vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 10px 30px rgba(15, 23, 42, 0.22);
+  animation: toggle-title-rise 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+:root[data-theme='dark'] .toggle-section-title-intro {
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+.toggle-section-focus {
+  will-change: transform, opacity, filter;
+  animation: section-toggle-focus-in 1.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes toggle-title-rise {
+  0% {
+    top: 54%;
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0;
+    filter: blur(14px);
+  }
+
+  32% {
+    opacity: 1;
+    filter: blur(3px);
+  }
+
+  100% {
+    top: 6.3rem;
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes section-toggle-focus-in {
+  0% {
+    opacity: 0.48;
+    transform: translateY(18px) scale(0.992);
+    filter: blur(16px);
+  }
+
+  55% {
+    opacity: 0.95;
+    filter: blur(2px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Remove global toggle intro and section blur animation styles */
+.toggle-section-title-intro {
+  display: none;
+}
+
+:root[data-theme='dark'] .toggle-section-title-intro {
+  display: none;
+}
+
+.toggle-section-focus {
+  display: none;
+}
+
+@keyframes toggle-title-rise {
+  display: none;
+}
+
+@keyframes section-toggle-focus-in {
+  display: none;
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --site-cursor: url('/cursors/triangle-pointer-24-black.svg');
+  color-scheme: light;
+}
+
+:root[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #171717;
+  --site-cursor: url('/cursors/triangle-pointer-24-black.svg');
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --site-cursor: url('/cursors/triangle-pointer-24.svg');
+  color-scheme: dark;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (pointer: fine) {
+  html,
+  body,
+  a,
+  button,
+  [role='button'],
+  summary,
+  label,
+  select {
+    cursor: var(--site-cursor) 1 1, default;
+  }
+
+  input,
+  textarea {
+    cursor: text;
+  }
+}
+

@@ -6,7 +6,7 @@ interface EducationItem {
   period: string
   title: string
   institution: string
-  score: string
+  score?: string
   details?: string
 }
 
@@ -15,13 +15,11 @@ const educationTimeline: EducationItem[] = [
     period: "2025 - 2027",
     title: "Master of Computer Applications (Information Technology)",
     institution: "Marian College Kuttikkanam (Autonomous), Kerala",
-    score: "CGPA: 8.5",
   },
   {
     period: "2022 - 2025",
     title: "Bachelor of Commerce (Computer Applications)",
     institution: "Kristu Jyoti College of Management and Technology, Kottayam",
-    score: "CGPA: 6.69",
   },
   {
     period: "Dec 2023 - Present",
@@ -58,7 +56,7 @@ export default function CourseTimeline() {
               <p className="text-sm uppercase tracking-wide text-foreground/60">{item.period}</p>
               <h3 className="mt-1 text-xl font-bold leading-snug">{item.title}</h3>
               <p className="mt-2 text-foreground/80">{item.institution}</p>
-              <p className="mt-1 font-medium text-foreground/80">{item.score}</p>
+              {item.score && <p className="mt-1 font-medium text-foreground/80">{item.score}</p>}
               {item.details && <p className="mt-2 text-sm text-foreground/70">{item.details}</p>}
             </article>
           </AnimatedText>

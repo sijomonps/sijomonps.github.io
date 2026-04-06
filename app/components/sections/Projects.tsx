@@ -22,7 +22,7 @@ const projects: Project[] = [
       'Implemented mobile-first layouts for seamless usage across devices.',
       'Added product videos and image carousel to improve browsing experience.',
     ],
-    link: 'https://hpcrafts.ccbp.tech',
+    link: 'https://hpcrafts.in/',
   },
   {
     title: 'Typing Speed Test',

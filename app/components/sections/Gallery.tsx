@@ -2,37 +2,51 @@
 
 import AnimatedText from '../common/AnimatedText'
 import GradientBackground from '../common/GradientBackground'
+import type { IconType } from 'react-icons'
+import { FiGithub, FiInstagram, FiLinkedin, FiMail, FiMapPin, FiPhone } from 'react-icons/fi'
+import { FaXTwitter } from 'react-icons/fa6'
 
 type ContactItem = {
   label: string
-  value: string
-  href?: string
+  href: string
+  Icon: IconType
 }
 
 const contactItems: ContactItem[] = [
   {
     label: 'Email',
-    value: 'sijomon700@gmail.com',
     href: 'mailto:sijomon700@gmail.com',
+    Icon: FiMail,
   },
   {
     label: 'Phone',
-    value: '+91 62357 19647',
     href: 'tel:+916235719647',
+    Icon: FiPhone,
   },
   {
     label: 'Location',
-    value: 'Thiruvalla, Kerala, India',
+    href: 'https://maps.google.com/?q=Thiruvalla,+Kerala,+India',
+    Icon: FiMapPin,
   },
   {
     label: 'GitHub',
-    value: 'github.com/sijomonps',
     href: 'https://github.com/sijomonps',
+    Icon: FiGithub,
   },
   {
     label: 'LinkedIn',
-    value: 'linkedin.com/in/sijomonps',
     href: 'https://www.linkedin.com/in/sijomonps/',
+    Icon: FiLinkedin,
+  },
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/zeejo.ae/',
+    Icon: FiInstagram,
+  },
+  {
+    label: 'X',
+    href: 'https://x.com/sijomonps',
+    Icon: FaXTwitter,
   },
 ]
 
@@ -59,27 +73,23 @@ export default function Gallery() {
           </p>
         </AnimatedText>
 
-        <div className="relative z-10 mt-10 grid w-full max-w-4xl gap-4 sm:grid-cols-2">
-          {contactItems.map((item) => (
-            <AnimatedText key={item.label}>
-              <article className="rounded-2xl border border-white/20 bg-white/[0.08] p-5 backdrop-blur-xl shadow-lg">
-                <p className="text-xs uppercase tracking-[0.15em] text-foreground/60">{item.label}</p>
-                {item.href ? (
-                  <a
-                    href={item.href}
-                    target={item.href.startsWith('http') ? '_blank' : undefined}
-                    rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="mt-2 inline-block text-lg font-semibold hover:underline hover:underline-offset-4"
-                  >
-                    {item.value}
-                  </a>
-                ) : (
-                  <p className="mt-2 text-lg font-semibold">{item.value}</p>
-                )}
-              </article>
-            </AnimatedText>
-          ))}
-        </div>
+        <AnimatedText className="relative z-10 mt-10 w-full">
+          <div className="mx-auto flex w-full max-w-[13.5rem] flex-wrap items-center justify-center gap-3 sm:max-w-none sm:gap-4">
+            {contactItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                target={item.href.startsWith('http') ? '_blank' : undefined}
+                rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                aria-label={item.label}
+                title={item.label}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/[0.12] text-foreground shadow-md backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/[0.2] sm:h-12 sm:w-12"
+              >
+                <item.Icon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+        </AnimatedText>
       </div>
     </section>
   )

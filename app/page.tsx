@@ -8,6 +8,7 @@ import MySkills from './components/sections/MySkills'
 import Experience from './components/sections/Experience'
 import Projects from './components/sections/Projects'
 import Gallery from './components/sections/Gallery'
+import SectionJumpToggle from './components/common/SectionJumpToggle'
 
 export default function Home() {
   return (
@@ -29,6 +30,7 @@ export default function Home() {
         <Projects />
         <Gallery />
       </main>
+      <SectionJumpToggle />
     </>
   )
 }
