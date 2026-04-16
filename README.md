@@ -4,7 +4,7 @@ This repository contains my personal portfolio website built with Next.js and Ta
 
 ## Live Site
 
-https://sijomonps.github.io/Portfolio.me/
+https://sijomonps.github.io/
 
 ## Tech Stack
 
