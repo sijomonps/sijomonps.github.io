@@ -45,10 +45,9 @@ export default function About() {
                 <h3 className="font-display text-2xl sm:text-3xl tracking-wide uppercase font-bold text-foreground">
                   Development Journey
                 </h3>
-                <ul className="list-disc list-outside ml-5 space-y-2 font-sans text-base sm:text-lg leading-relaxed text-foreground/85 marker:text-foreground/40">
-                  <li>Transitioned from Commerce into software development through continuous learning.</li>
-                  <li>Build modern full-stack web applications and deploy them independently.</li>
-                </ul>
+                <p className="font-sans text-base sm:text-lg leading-relaxed text-foreground/85">
+                  My growth shifted into high gear with MarianResearch—a research management platform for Marian College Kuttikkanam. Moving beyond isolated practice, I gathered institutional requirements and engineered the full-stack system end-to-end using Next.js, Node.js, Express, and MongoDB, before containerizing and deploying it to production. Seeing the platform go live to serve 100+ faculty members, scholars, and staff transformed how I view software: not just as writing code, but as building dependable systems people rely on daily.
+                </p>
               </div>
             </AnimatedText>
 
