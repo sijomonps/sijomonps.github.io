@@ -61,9 +61,9 @@ export const metadata: Metadata = {
       "Portfolio of Sijomon P S, a Full-Stack Developer based in Thiruvalla, Kerala. Building modern web applications from code to cloud with Next.js, React, and DevOps.",
     images: [
       {
-        url: "/hero/hero-poster.webp",
-        width: 1280,
-        height: 720,
+        url: "/avatar.jpg",
+        width: 800,
+        height: 800,
         alt: "Sijomon P S — Full-Stack Developer",
       },
     ],
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: "Sijomon P S — Full-Stack Developer in Kerala",
     description:
       "Portfolio of Sijomon P S, a Full-Stack Developer based in Thiruvalla, Kerala. Building modern web applications from code to cloud.",
-    images: ["/hero/hero-poster.webp"],
+    images: ["/avatar.jpg"],
   },
   robots: {
     index: true,

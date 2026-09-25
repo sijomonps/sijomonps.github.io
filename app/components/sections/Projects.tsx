@@ -9,20 +9,73 @@ export default function Projects() {
   const shouldReduceMotion = useReducedMotion()
   const isReducedMotion = !!shouldReduceMotion
 
-  // Variants for the overall WORKS section container (triggered once on first view)
+  // Variants for the overall WORKS section container (replays every time section enters viewport)
   const headerVariants: Variants = {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: isReducedMotion ? 0 : 0.12,
+        staggerChildren: isReducedMotion ? 0 : 0.14,
       },
     },
   }
 
+  // Masked editorial heading reveal with subtle pop-and-settle
   const headingVariants: Variants = {
     hidden: {
       opacity: 0,
-      y: isReducedMotion ? 0 : 20,
+      y: isReducedMotion ? 0 : 36,
+      scale: isReducedMotion ? 1 : 0.94,
+      filter: isReducedMotion ? 'none' : 'blur(8px)',
+    },
+    visible: {
+      opacity: [0, 1, 1],
+      y: isReducedMotion ? 0 : [36, -2, 0],
+      scale: isReducedMotion ? 1 : [0.94, 1.015, 1],
+      filter: isReducedMotion ? 'none' : ['blur(8px)', 'blur(0px)', 'blur(0px)'],
+      transition: {
+        duration: isReducedMotion ? 0 : 0.65,
+        times: [0, 0.7, 1],
+        ease: ['easeOut', 'easeInOut'],
+      },
+    },
+  }
+
+  // Subtitle blur-to-sharp entrance following the heading
+  const subtitleVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: isReducedMotion ? 0 : 16,
+      filter: isReducedMotion ? 'none' : 'blur(4px)',
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: {
+        duration: isReducedMotion ? 0 : 0.5,
+        delay: isReducedMotion ? 0 : 0.18,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  // Horizontal rail coordinator: staggered vertical entrance for cards (strictly zero translateX)
+  const railVariants: Variants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: isReducedMotion ? 0 : 0.075,
+        delayChildren: isReducedMotion ? 0 : 0.28,
+      },
+    },
+  }
+
+  // Individual card vertical entrance
+  const cardVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: isReducedMotion ? 0 : 35,
       scale: isReducedMotion ? 1 : 0.96,
       filter: isReducedMotion ? 'none' : 'blur(4px)',
     },
@@ -32,54 +85,40 @@ export default function Projects() {
       scale: 1,
       filter: 'blur(0px)',
       transition: {
-        duration: isReducedMotion ? 0 : 0.6,
-        ease: [0.22, 1, 0.36, 1],
-      },
-    },
-  }
-
-  const subtitleVariants: Variants = {
-    hidden: {
-      opacity: 0,
-      y: isReducedMotion ? 0 : 14,
-      filter: isReducedMotion ? 'none' : 'blur(3px)',
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      filter: 'blur(0px)',
-      transition: {
-        duration: isReducedMotion ? 0 : 0.5,
-        ease: [0.22, 1, 0.36, 1],
-      },
-    },
-  }
-
-  const railVariants: Variants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: isReducedMotion ? 0 : 0.07,
-        delayChildren: isReducedMotion ? 0 : 0.15,
-      },
-    },
-  }
-
-  const cardVariants: Variants = {
-    hidden: {
-      opacity: 0,
-      y: isReducedMotion ? 0 : 28,
-      scale: isReducedMotion ? 1 : 0.97,
-      filter: isReducedMotion ? 'none' : 'blur(4px)',
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      filter: 'blur(0px)',
-      transition: {
         duration: isReducedMotion ? 0 : 0.55,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  // Image internal settling reveal
+  const imageVariants: Variants = {
+    hidden: {
+      scale: isReducedMotion ? 1 : 1.06,
+      opacity: isReducedMotion ? 1 : 0,
+    },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        duration: isReducedMotion ? 0 : 0.65,
+        ease: 'easeOut',
+      },
+    },
+  }
+
+  // Card textual content progressive entrance
+  const cardContentVariants: Variants = {
+    hidden: {
+      opacity: isReducedMotion ? 1 : 0,
+      y: isReducedMotion ? 0 : 10,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: isReducedMotion ? 0 : 0.45,
+        delay: isReducedMotion ? 0 : 0.1,
         ease: [0.22, 1, 0.36, 1],
       },
     },
@@ -95,7 +134,7 @@ export default function Projects() {
       y: 0,
       transition: {
         duration: isReducedMotion ? 0 : 0.5,
-        delay: isReducedMotion ? 0 : 0.35,
+        delay: isReducedMotion ? 0 : 0.45,
         ease: [0.22, 1, 0.36, 1],
       },
     },
@@ -106,7 +145,7 @@ export default function Projects() {
       id="works"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{ once: false, amount: 0.15 }}
       className="w-full py-20 sm:py-28 relative overflow-hidden"
     >
       {/* Centered Section Header */}
@@ -115,12 +154,16 @@ export default function Projects() {
         className="max-w-7xl mx-auto px-6 sm:px-10 md:px-12 text-center"
       >
         <div className="flex flex-col items-center justify-center text-center">
-          <motion.h2
-            variants={headingVariants}
-            className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground"
-          >
-            WORKS
-          </motion.h2>
+          {/* Masked Editorial Heading */}
+          <div className="overflow-hidden py-1">
+            <motion.h2
+              variants={headingVariants}
+              className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground leading-none"
+            >
+              WORKS
+            </motion.h2>
+          </div>
+
           <motion.p
             variants={subtitleVariants}
             className="font-sans text-sm sm:text-base text-foreground/60 mt-3 max-w-xl mx-auto tracking-wide text-center"
@@ -130,7 +173,7 @@ export default function Projects() {
         </div>
       </motion.div>
 
-      {/* Horizontal Project Rail Container (Single Row, No Wrap) */}
+      {/* Horizontal Project Rail Container (Single Row, Native Horizontal Scroll, No Horizontal Animation) */}
       <div className="mt-10 sm:mt-14 w-full">
         <motion.div
           variants={railVariants}
@@ -166,17 +209,22 @@ export default function Projects() {
                 aria-label={`View live website for ${project.title}`}
                 className="relative block w-full aspect-[16/10] overflow-hidden border-b border-white/10 bg-zinc-950 group/img focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <Image
-                  src={project.image}
-                  alt={`${project.title} project preview`}
-                  fill
-                  sizes="(max-width: 640px) 340px, (max-width: 1024px) 420px, 450px"
-                  className="object-cover transition-transform duration-500 ease-out group-hover/img:scale-[1.03]"
-                />
+                <motion.div variants={imageVariants} className="relative w-full h-full">
+                  <Image
+                    src={project.image}
+                    alt={`${project.title} project preview`}
+                    fill
+                    sizes="(max-width: 640px) 340px, (max-width: 1024px) 420px, 450px"
+                    className="object-cover transition-transform duration-500 ease-out group-hover/img:scale-[1.03]"
+                  />
+                </motion.div>
               </a>
 
               {/* Textual Content Area (~30-35% of card) */}
-              <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-4">
+              <motion.div
+                variants={cardContentVariants}
+                className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-4"
+              >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold tracking-widest text-foreground/50">
@@ -231,7 +279,7 @@ export default function Projects() {
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.article>
           ))}
         </motion.div>
