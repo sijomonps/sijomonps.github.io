@@ -4,7 +4,6 @@ import AnimatedText from '../common/AnimatedText'
 import GradientBackground from '../common/GradientBackground'
 import type { IconType } from 'react-icons'
 import { FiGithub, FiInstagram, FiLinkedin, FiMail, FiMapPin, FiPhone } from 'react-icons/fi'
-import { FaXTwitter } from 'react-icons/fa6'
 
 type ContactItem = {
   label: string
@@ -42,11 +41,6 @@ const contactItems: ContactItem[] = [
     label: 'Instagram',
     href: 'https://www.instagram.com/zeejo.ae/',
     Icon: FiInstagram,
-  },
-  {
-    label: 'X',
-    href: 'https://x.com/sijomonps',
-    Icon: FaXTwitter,
   },
 ]
 

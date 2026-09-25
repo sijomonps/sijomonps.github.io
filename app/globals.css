@@ -25,6 +25,15 @@ h1, h2, h3, h4, .font-display {
   display: none;
 }
 
+.works-scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.works-scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 html {
   scroll-behavior: smooth;
 }

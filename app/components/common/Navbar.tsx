@@ -4,19 +4,19 @@ import { useState, useEffect, useRef } from "react"
 
 const navItems = [
   { name: "Home", href: "#home" },
+  { name: "Works", href: "#works" },
   { name: "About", href: "#about" },
-  { name: "Skills", href: "#skills"},
+  { name: "Skills", href: "#skills" },
   { name: "Education", href: "#education" },
-  { name: "Highlights", href: "#experience"},
-  { name: "Projects", href: "#projects"},
-  { name: "Contact", href: "#contact"},
+  { name: "Highlights", href: "#experience" },
+  { name: "Contact", href: "#contact" },
 ]
 
 export default function Navbar() {
   const [activeSection, setActiveSection] = useState("home")
   const underlineRef = useRef<HTMLDivElement>(null)
   const navRef = useRef<HTMLUListElement>(null)
-  const NAVBAR_HEIGHT = 60
+  const NAVBAR_HEIGHT = 64
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,9 +53,9 @@ export default function Navbar() {
     const target = document.querySelector(href) as HTMLElement
     
     if (target) {
-      const targetPosition = target.offsetTop - NAVBAR_HEIGHT
+      const targetPosition = target.getBoundingClientRect().top + window.scrollY - NAVBAR_HEIGHT
       window.scrollTo({
-        top: targetPosition,
+        top: Math.max(targetPosition, 0),
         behavior: 'smooth'
       })
     }

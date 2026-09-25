@@ -16,6 +16,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <Projects />
         <About />
         <MySkills />
 
@@ -27,7 +28,6 @@ export default function Home() {
         </section>
 
         <Experience />
-        <Projects />
         <Contact />
       </main>
       <SectionJumpToggle />

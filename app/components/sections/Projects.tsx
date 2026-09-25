@@ -1,197 +1,163 @@
 'use client'
 
-import AnimatedText from '../common/AnimatedText'
-import GradientBackground from '../common/GradientBackground'
+import Image from 'next/image'
+import { motion, useReducedMotion } from 'framer-motion'
 import { FiArrowUpRight } from 'react-icons/fi'
-
-type Project = {
-  title: string
-  category: string
-  summary: string
-  stack: string[]
-  highlights: string[]
-  impact: string
-  link: string
-  github?: string
-  featured?: boolean
-}
-
-const projects: Project[] = [
-  {
-    title: 'MARIANRESEARCH',
-    category: 'Live Project',
-    summary:
-      'Research management platform developed for Marian College Kuttikkanam to streamline research paper submission, review, approval, and administration through a role-based workflow.',
-    stack: ['Node.js', 'Express.js', 'Next.js', 'MongoDB', 'Docker'],
-    highlights: [
-
-    ],
-    impact: 'Full Stack',
-    link: 'https://research.mariancollege.org/',
-    featured: true,
-  },
-  {
-    title: 'MarkGPT',
-    category: 'Chrome Extension',
-    summary:
-      'Chrome extension that helps users bookmark important conversations across ChatGPT, Claude, and Gemini - Ai Assisted Project',
-    stack: ['JavaScript', 'HTML', 'PowerShell'],
-    highlights: [
-
-    ],
-    impact: '120+ Users',
-    link: 'https://chromewebstore.google.com/detail/eimdlmdbonaemjmfnnnknjejlijpmcij?utm_source=item-share-cb',
-    github: 'https://github.com/sijomonps/MarkGPT',
-    featured: false,
-  },
-  {
-    title: 'TEDxKCMT Event Website',
-    category: 'Event Website',
-    summary:
-      'Official TEDxKCMT event website created to improve event visibility and simplify ticket registrations - No Ai Used',
-    stack: ['HTML', 'CSS'],
-    highlights: [
-    ],
-    impact: 'Real Event Website',
-    link: 'https://sijomonps.github.io/Tedxkcmt/',
-    github: 'https://github.com/sijomonps/Tedxkcmt',
-  },
-  {
-    title: 'Flappy Aljo',
-    category: 'Browser Game',
-    summary:
-      "Fun competitive browser game built using a friend's face, custom sounds, and leaderboard mechanics - Ai Assisted Project'",
-    stack: ['HTML', 'CSS', 'JavaScript', 'Firebase'],
-    highlights: [
-    ],
-    impact: '50+ Players',
-    link: 'https://sijomonps.github.io/My-Flappy-Aljo/',
-    github: 'https://github.com/sijomonps/My-Flappy-Aljo',
-  },
-]
+import { projects } from '../../data/project'
 
 export default function Projects() {
+  const shouldReduceMotion = useReducedMotion()
+  const isReducedMotion = !!shouldReduceMotion
+
   return (
-    <section id="projects" className="container mx-auto px-6 sm:px-10 md:px-12">
-      <div className="
-        min-h-screen
-        flex flex-col items-center justify-center
-        py-16 md:py-20
-        relative
-        overflow-hidden
-      ">
-        <GradientBackground
-          sectionId="projects"
-          gradientColors={{
-            start: '#B45309',
-            end: '#7C2D12'
-          }}
-        />
+    <section id="works" className="w-full py-20 sm:py-28 relative overflow-hidden">
+      {/* Centered Section Header */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 md:px-12 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: isReducedMotion ? 0 : 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+          className="flex flex-col items-center justify-center text-center"
+        >
+          <h2 className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground">
+            WORKS
+          </h2>
+          <p className="font-sans text-sm sm:text-base text-foreground/60 mt-3 max-w-xl mx-auto tracking-wide text-center">
+            Selected projects, experiments, and products I&apos;ve built.
+          </p>
+        </motion.div>
+      </div>
 
-        <AnimatedText>
-          <div className="text-center relative z-10">
-            <h2 className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground">
-              FEATURED PROJECTS
-            </h2>
-            <p className="mt-3 max-w-2xl mx-auto font-sans text-sm sm:text-base text-foreground/80 leading-relaxed">
-              I enjoy building practical products that solve real problems, improve workflows, and create engaging user experiences.
-            </p>
-          </div>
-        </AnimatedText>
-
-        <div className="relative z-0 mt-10 grid w-full max-w-6xl gap-6 md:grid-cols-2">
-          {projects.map((project) => (
-            <AnimatedText key={project.title}>
-              <article
-                className={`group relative h-full overflow-hidden rounded-xl border bg-white/[0.08] p-4 sm:p-5 backdrop-blur-xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-900/20 ${project.featured
-                    ? 'md:col-span-2 border-amber-400/50 shadow-amber-900/30 md:p-6'
-                    : 'border-white/15'
-                  }`}
+      {/* Horizontal Project Rail Container (Single Row, No Wrap) */}
+      <div className="mt-10 sm:mt-14 w-full">
+        <div
+          tabIndex={0}
+          aria-label="Horizontal list of projects"
+          className="
+            works-scrollbar-hidden
+            w-full overflow-x-auto overflow-y-hidden
+            flex flex-nowrap gap-5 sm:gap-7
+            px-6 sm:px-10 md:px-12 pb-6 pt-2
+            focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30
+          "
+        >
+          {projects.map((project, index) => (
+            <motion.article
+              key={project.id}
+              initial={{ opacity: 0, y: isReducedMotion ? 0 : 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{
+                duration: isReducedMotion ? 0 : 0.45,
+                delay: isReducedMotion ? 0 : Math.min(index * 0.05, 0.35),
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+              className="
+                group relative flex flex-col h-full shrink-0
+                w-[84vw] max-w-[340px] sm:w-[390px] sm:max-w-none md:w-[420px] lg:w-[450px]
+                rounded-2xl overflow-hidden
+                border border-white/10 bg-zinc-900/40 backdrop-blur-sm
+                transition-all duration-300 ease-out
+                hover:-translate-y-1.5 hover:border-white/20 hover:bg-zinc-900/70
+                hover:shadow-2xl hover:shadow-black/70
+              "
+            >
+              {/* Dominant Image Area (~65-70% visual area, 16:10 aspect ratio) */}
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`View live website for ${project.title}`}
+                className="relative block w-full aspect-[16/10] overflow-hidden border-b border-white/10 bg-zinc-950 group/img focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <div className="absolute inset-0 rounded-xl ring-1 ring-amber-400/30" />
-                </div>
-                <div className="relative z-10">
+                <Image
+                  src={project.image}
+                  alt={`${project.title} project preview`}
+                  fill
+                  sizes="(max-width: 640px) 340px, (max-width: 1024px) 420px, 450px"
+                  className="object-cover transition-transform duration-500 ease-out group-hover/img:scale-[1.03]"
+                />
+              </a>
+
+              {/* Textual Content Area (~30-35% of card) */}
+              <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 space-y-4">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-sans rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[10px] sm:text-xs font-medium uppercase tracking-wider text-foreground/80">
-                      {project.category}
-                    </span>
-                    <span className="font-sans rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[10px] sm:text-xs font-medium text-foreground/80">
-                      {project.impact}
+                    <span className="font-mono text-xs font-bold tracking-widest text-foreground/50">
+                      {project.number} · {project.category}
                     </span>
                   </div>
-                </div>
-                <div className="mt-3 flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-                  <h3 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase font-bold text-foreground leading-none">{project.title}</h3>
-                  <div className="flex items-center gap-2">
+
+                  <h3 className="font-display text-2xl sm:text-3xl tracking-wide uppercase font-bold text-foreground leading-none">
                     <a
-                      href={project.link}
+                      href={project.liveUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-foreground/80 transition-colors duration-300 hover:text-foreground"
+                      className="transition-colors hover:text-white focus:outline-none focus-visible:underline"
                     >
-                      Live
-                      <FiArrowUpRight className="h-3.5 w-3.5" />
+                      {project.title}
                     </a>
-                    {project.github && (
+                  </h3>
+
+                  <p className="font-sans text-xs sm:text-sm text-foreground/75 leading-relaxed line-clamp-2">
+                    {project.description}
+                  </p>
+                </div>
+
+                <div className="pt-3 space-y-3.5 border-t border-white/5">
+                  <p className="font-sans text-xs text-foreground/50 tracking-wide font-medium">
+                    {project.technologies.join(' · ')}
+                  </p>
+
+                  <div className="flex items-center gap-4">
+                    <a
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase text-foreground hover:text-white transition-colors group/link"
+                      aria-label={`View live website for ${project.title}`}
+                    >
+                      <span>VIEW PROJECT</span>
+                      <FiArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                    </a>
+
+                    {project.githubUrl && (
                       <a
-                        href={project.github}
+                        href={project.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-foreground/80 transition-colors duration-300 hover:text-foreground"
+                        className="inline-flex items-center gap-1 text-xs font-semibold tracking-wider uppercase text-foreground/50 hover:text-foreground transition-colors"
+                        aria-label={`View GitHub repository for ${project.title}`}
                       >
-                        GitHub
-                        <FiArrowUpRight className="h-3.5 w-3.5" />
+                        <span>GITHUB</span>
+                        <FiArrowUpRight className="h-3 w-3" />
                       </a>
                     )}
                   </div>
                 </div>
-
-                <p className="mt-2 text-sm sm:text-base text-foreground/80 leading-normal sm:leading-relaxed">{project.summary}</p>
-
-                <div className="mt-3 space-y-1 text-xs sm:text-sm text-foreground/75">
-                  {project.highlights.map((point) => (
-                    <p key={point}>{point}</p>
-                  ))}
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-1.5 sm:gap-2">
-                  {project.stack.map((skill) => (
-                    <span
-                      key={skill}
-                      className="rounded-full border border-black/10 px-2 py-0.5 text-[10px] sm:text-xs dark:border-white/20"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide underline underline-offset-4"
-                >
-                  View Project
-                  <FiArrowUpRight className="h-4 w-4" />
-                </a>
-              </article>
-            </AnimatedText>
+              </div>
+            </motion.article>
           ))}
         </div>
+      </div>
 
-        <div className="relative z-10 mt-8 flex justify-center">
-          <a
-            href="https://github.com/sijomonps?tab=repositories"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black shadow-md hover:scale-105 transition transform duration-200 dark:bg-black dark:text-white"
-            aria-label="View more projects on GitHub"
-          >
-            View more projects (30+)
-            <FiArrowUpRight className="h-4 w-4" />
-          </a>
-        </div>
+      {/* Global GitHub Repositories Link */}
+      <div className="mt-8 sm:mt-12 flex justify-center px-6">
+        <a
+          href="https://github.com/sijomonps?tab=repositories"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+            inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3
+            font-sans text-xs font-semibold uppercase tracking-widest text-foreground
+            transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:-translate-y-0.5
+          "
+          aria-label="View all projects on GitHub"
+        >
+          <span>View All Repositories (40+)</span>
+          <FiArrowUpRight className="h-4 w-4" />
+        </a>
       </div>
     </section>
   )

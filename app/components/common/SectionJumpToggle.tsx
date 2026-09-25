@@ -10,11 +10,11 @@ type SectionItem = {
 
 const sections: SectionItem[] = [
   { id: 'home', name: 'Home' },
+  { id: 'works', name: 'Works' },
   { id: 'about', name: 'About' },
   { id: 'skills', name: 'Skills' },
   { id: 'education', name: 'Education' },
   { id: 'experience', name: 'Highlights' },
-  { id: 'projects', name: 'Projects' },
   { id: 'contact', name: 'Contact' },
 ]
 
@@ -26,7 +26,7 @@ export default function SectionJumpToggle() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const NAVBAR_OFFSET = 68
+  const NAVBAR_OFFSET = 64
   const nextIndex = (currentIndex + 1) % sections.length
   const nextSection = isAtBottom ? sections[0] : sections[nextIndex]
   const isWrappingToTop = isAtBottom || nextSection.id === 'home'
