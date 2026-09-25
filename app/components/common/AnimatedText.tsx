@@ -1,17 +1,21 @@
 'use client'
 
-import { motion, type Variants } from "framer-motion"
+import { motion, useReducedMotion, type Variants } from "framer-motion"
 
 interface AnimatedBlockProps {
   children: React.ReactNode
   className?: string
+  variant?: "default" | "hero"
 }
 
 export default function AnimatedText({
   children,
   className = "",
+  variant = "default",
 }: AnimatedBlockProps) {
-  const fadeInVariants: Variants = {
+  const shouldReduceMotion = useReducedMotion()
+
+  const defaultVariants: Variants = {
     hidden: {
       opacity: 0,
       scale: 0.9,
@@ -31,12 +35,40 @@ export default function AnimatedText({
     }
   }
 
+  const heroVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 0.96,
+      filter: "blur(8px)",
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: {
+        duration: 0.65,
+        ease: [0.22, 1, 0.36, 1],
+        staggerChildren: 0.08,
+      },
+    },
+  }
+
+  if (shouldReduceMotion) {
+    return (
+      <div className={className}>
+        {children}
+      </div>
+    )
+  }
+
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: false, margin: "-100px" }}
-      variants={fadeInVariants}
+      viewport={{ once: variant === "hero", margin: variant === "hero" ? "0px" : "-100px" }}
+      variants={variant === "hero" ? heroVariants : defaultVariants}
       className={className}
     >
       {children}

@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { projects } from '../../data/project'
 
@@ -9,29 +9,131 @@ export default function Projects() {
   const shouldReduceMotion = useReducedMotion()
   const isReducedMotion = !!shouldReduceMotion
 
+  // Variants for the overall WORKS section container (triggered once on first view)
+  const headerVariants: Variants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: isReducedMotion ? 0 : 0.12,
+      },
+    },
+  }
+
+  const headingVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: isReducedMotion ? 0 : 20,
+      scale: isReducedMotion ? 1 : 0.96,
+      filter: isReducedMotion ? 'none' : 'blur(4px)',
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: {
+        duration: isReducedMotion ? 0 : 0.6,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  const subtitleVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: isReducedMotion ? 0 : 14,
+      filter: isReducedMotion ? 'none' : 'blur(3px)',
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: {
+        duration: isReducedMotion ? 0 : 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  const railVariants: Variants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: isReducedMotion ? 0 : 0.07,
+        delayChildren: isReducedMotion ? 0 : 0.15,
+      },
+    },
+  }
+
+  const cardVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: isReducedMotion ? 0 : 28,
+      scale: isReducedMotion ? 1 : 0.97,
+      filter: isReducedMotion ? 'none' : 'blur(4px)',
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: {
+        duration: isReducedMotion ? 0 : 0.55,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  const footerVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: isReducedMotion ? 0 : 16,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: isReducedMotion ? 0 : 0.5,
+        delay: isReducedMotion ? 0 : 0.35,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
   return (
-    <section id="works" className="w-full py-20 sm:py-28 relative overflow-hidden">
+    <motion.section
+      id="works"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.15 }}
+      className="w-full py-20 sm:py-28 relative overflow-hidden"
+    >
       {/* Centered Section Header */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 md:px-12 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: isReducedMotion ? 0 : 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
-          transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          className="flex flex-col items-center justify-center text-center"
-        >
-          <h2 className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground">
+      <motion.div
+        variants={headerVariants}
+        className="max-w-7xl mx-auto px-6 sm:px-10 md:px-12 text-center"
+      >
+        <div className="flex flex-col items-center justify-center text-center">
+          <motion.h2
+            variants={headingVariants}
+            className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground"
+          >
             WORKS
-          </h2>
-          <p className="font-sans text-sm sm:text-base text-foreground/60 mt-3 max-w-xl mx-auto tracking-wide text-center">
+          </motion.h2>
+          <motion.p
+            variants={subtitleVariants}
+            className="font-sans text-sm sm:text-base text-foreground/60 mt-3 max-w-xl mx-auto tracking-wide text-center"
+          >
             Selected projects, experiments, and products I&apos;ve built.
-          </p>
-        </motion.div>
-      </div>
+          </motion.p>
+        </div>
+      </motion.div>
 
       {/* Horizontal Project Rail Container (Single Row, No Wrap) */}
       <div className="mt-10 sm:mt-14 w-full">
-        <div
+        <motion.div
+          variants={railVariants}
           tabIndex={0}
           aria-label="Horizontal list of projects"
           className="
@@ -42,17 +144,10 @@ export default function Projects() {
             focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30
           "
         >
-          {projects.map((project, index) => (
+          {projects.map((project) => (
             <motion.article
               key={project.id}
-              initial={{ opacity: 0, y: isReducedMotion ? 0 : 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{
-                duration: isReducedMotion ? 0 : 0.45,
-                delay: isReducedMotion ? 0 : Math.min(index * 0.05, 0.35),
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
+              variants={cardVariants}
               className="
                 group relative flex flex-col h-full shrink-0
                 w-[84vw] max-w-[340px] sm:w-[390px] sm:max-w-none md:w-[420px] lg:w-[450px]
@@ -139,11 +234,14 @@ export default function Projects() {
               </div>
             </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Global GitHub Repositories Link */}
-      <div className="mt-8 sm:mt-12 flex justify-center px-6">
+      <motion.div
+        variants={footerVariants}
+        className="mt-8 sm:mt-12 flex justify-center px-6"
+      >
         <a
           href="https://github.com/sijomonps?tab=repositories"
           target="_blank"
@@ -158,7 +256,7 @@ export default function Projects() {
           <span>View All Repositories (40+)</span>
           <FiArrowUpRight className="h-4 w-4" />
         </a>
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   )
 }

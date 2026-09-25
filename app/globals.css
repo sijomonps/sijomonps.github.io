@@ -34,6 +34,15 @@ h1, h2, h3, h4, .font-display {
   display: none;
 }
 
+.fixed-social-rail-grid {
+  background-color: rgba(9, 9, 11, 0.85);
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-position: center center;
+}
+
 html {
   scroll-behavior: smooth;
 }

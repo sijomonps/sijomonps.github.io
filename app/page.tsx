@@ -8,6 +8,7 @@ import MySkills from './components/sections/MySkills'
 import Experience from './components/sections/Experience'
 import Projects from './components/sections/Projects'
 import Contact from './components/sections/Contact'
+import FixedSocialRail from './components/common/FixedSocialRail'
 import SectionJumpToggle from './components/common/SectionJumpToggle'
 
 export default function Home() {
@@ -30,6 +31,7 @@ export default function Home() {
         <Experience />
         <Contact />
       </main>
+      <FixedSocialRail />
       <SectionJumpToggle />
     </>
   )
