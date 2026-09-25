@@ -14,6 +14,30 @@ body {
   background: var(--background);
   font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   letter-spacing: -0.01em;
+  position: relative;
+}
+
+/* Subtle Technical Grid Background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
+}
+
+/* Hero-specific subtle grid overlay with lower opacity over static photo */
+.hero-grid-overlay {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
 }
 
 h1, h2, h3, h4, .font-display {

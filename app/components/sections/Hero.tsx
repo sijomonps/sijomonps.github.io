@@ -65,6 +65,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-background" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.65)_100%)]" />
         <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-background to-transparent" />
+        <div className="absolute inset-0 hero-grid-overlay pointer-events-none" />
       </div>
 
       {!shouldReduceMotion && <FloatingElements />}
