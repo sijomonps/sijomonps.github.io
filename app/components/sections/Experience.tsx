@@ -77,33 +77,33 @@ export default function Experience() {
       }
     }
     if (screenSize === 'tablet') {
-      const radius = 180
-      const nodeSize = count > 35 ? 52 : count > 28 ? 58 : 66
+      const radius = 190
+      const nodeSize = count > 35 ? 70 : count > 28 ? 76 : 82
       return {
-        stageHeight: 540,
+        stageHeight: 560,
         radius,
         nodeSize,
-        minScale: 0.35,
-        maxScale: 1.22,
-        minOpacity: 0.30,
+        minScale: 0.45,
+        maxScale: 1.25,
+        minOpacity: 0.35,
         maxOpacity: 1.0,
         cameraDistance: 800,
-        curveExponent: 1.3,
+        curveExponent: 1.15,
       }
     }
-    // Desktop - Exactly preserved
-    const radius = 235
-    const nodeSize = count > 35 ? 64 : count > 28 ? 72 : 82
+    // Desktop - Enhanced Prominence & Density
+    const radius = 240
+    const nodeSize = count > 35 ? 88 : count > 28 ? 94 : 100
     return {
-      stageHeight: 650,
+      stageHeight: 660,
       radius,
       nodeSize,
-      minScale: 0.35,
-      maxScale: 1.30,
-      minOpacity: 0.30,
+      minScale: 0.50,
+      maxScale: 1.35,
+      minOpacity: 0.35,
       maxOpacity: 1.0,
       cameraDistance: 900,
-      curveExponent: 1.4,
+      curveExponent: 1.1,
     }
   }, [screenSize, viewportWidth])
 
