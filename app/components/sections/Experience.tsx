@@ -10,6 +10,28 @@ import { highlights, type Highlight } from '../../data/highlights'
 
 type ScreenSize = 'mobile' | 'tablet' | 'desktop'
 
+/**
+ * Calculates scale based on projected distance from the globe's visual center.
+ * Inside the main visible circular area (0-70% of radius), all images remain at 100% base size.
+ * As images approach the outer circumference (70%-100%), they smoothly shrink down to 35%.
+ */
+function calcEdgeScale(x: number, y: number, radius: number, cameraDistance: number): number {
+  const dist = Math.sqrt(x * x + y * y)
+  const denom = Math.sqrt(Math.max(1, cameraDistance * cameraDistance - radius * radius))
+  const visibleRadius = (radius * cameraDistance) / denom
+  const edgeRatio = dist / visibleRadius
+
+  // Center & middle area: 100% of base image size
+  if (edgeRatio <= 0.70) {
+    return 1.0
+  }
+
+  // Outer edge zone (70% - 100%+): smooth ease-in curve from 1.0 down to 0.35
+  const t = Math.min(1.0, (edgeRatio - 0.70) / 0.30)
+  const minEdgeScale = 0.35
+  return Math.max(minEdgeScale, 1.0 - Math.pow(t, 2.0) * (1.0 - minEdgeScale))
+}
+
 export default function Experience() {
   const shouldReduceMotion = useReducedMotion()
   const isReducedMotion = !!shouldReduceMotion
@@ -68,8 +90,6 @@ export default function Experience() {
         stageHeight: Math.min(460, Math.max(390, Math.round(safeWidth * 1.08))),
         radius,
         nodeSize,
-        minScale: 0.48,
-        maxScale: 1.28,
         minOpacity: 0.38,
         maxOpacity: 1.0,
         cameraDistance: 460,
@@ -83,8 +103,6 @@ export default function Experience() {
         stageHeight: 560,
         radius,
         nodeSize,
-        minScale: 0.45,
-        maxScale: 1.25,
         minOpacity: 0.35,
         maxOpacity: 1.0,
         cameraDistance: 800,
@@ -98,8 +116,6 @@ export default function Experience() {
       stageHeight: 660,
       radius,
       nodeSize,
-      minScale: 0.50,
-      maxScale: 1.35,
       minOpacity: 0.35,
       maxOpacity: 1.0,
       cameraDistance: 900,
@@ -194,7 +210,7 @@ export default function Experience() {
       const cosAlpha = Math.cos(alpha)
       const sinAlpha = Math.sin(alpha)
       const R = dims.radius
-      const { minScale, maxScale, minOpacity, maxOpacity, curveExponent } = dims
+      const { minOpacity, maxOpacity, curveExponent } = dims
 
       for (let i = 0; i < sphericalPoints.length; i++) {
         const el = nodeRefs.current[i]
@@ -214,7 +230,7 @@ export default function Experience() {
         // 3. Normalized depth (Z in [-1, 1] -> normZ in [0, 1])
         const normZ = Math.max(0, Math.min(1, (Z + 1) / 2))
 
-        // 4. Responsive depth curve
+        // 4. Responsive depth curve for 3D opacity and z-index ordering
         const depthCurve = Math.pow(normZ, curveExponent)
 
         // 5. Perspective projection factor
@@ -222,16 +238,16 @@ export default function Experience() {
         const screenX = X * R * persp
         const screenY = Y * R * persp
 
-        // 6. Dynamic scale, opacity, and z-index derived continuously from 3D depth
-        const isHovered = hoveredIdRef.current === highlights[i].id
-        const depthScale = minScale + depthCurve * (maxScale - minScale)
+        // 6. Edge proximity scaling: normal base size across center/middle, shrinking only near outer edge
+        const edgeScale = calcEdgeScale(screenX, screenY, R, D)
         const depthOpacity = minOpacity + depthCurve * (maxOpacity - minOpacity)
         const depthZIndex = 10 + Math.round(normZ * 800)
 
+        const isHovered = hoveredIdRef.current === highlights[i].id
         const finalOpacity = isHovered ? 1 : depthOpacity
         const finalZIndex = isHovered ? 1000 : depthZIndex
 
-        el.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${depthScale.toFixed(3)})`
+        el.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${edgeScale.toFixed(3)})`
         el.style.opacity = finalOpacity.toFixed(3)
         el.style.zIndex = String(finalZIndex)
       }
@@ -515,7 +531,7 @@ export default function Experience() {
           const persp = D / (D - Z * dims.radius)
           const initX = X * dims.radius * persp
           const initY = Y * dims.radius * persp
-          const initScale = dims.minScale + depthCurve * (dims.maxScale - dims.minScale)
+          const initScale = calcEdgeScale(initX, initY, dims.radius, D)
           const initOpacity = dims.minOpacity + depthCurve * (dims.maxOpacity - dims.minOpacity)
           const initZIndex = 10 + Math.round(normZ * 800)
 
