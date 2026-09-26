@@ -12,9 +12,9 @@ const sections: SectionItem[] = [
   { id: 'home', name: 'Home' },
   { id: 'works', name: 'Works' },
   { id: 'about', name: 'About' },
+  { id: 'experience', name: 'Highlights' },
   { id: 'skills', name: 'Skills' },
   { id: 'education', name: 'Education' },
-  { id: 'experience', name: 'Highlights' },
   { id: 'contact', name: 'Contact' },
 ]
 

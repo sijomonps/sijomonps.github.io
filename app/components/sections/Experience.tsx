@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import Image from 'next/image'
-import { motion, useReducedMotion, type Variants } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion'
 import { FiArrowUpRight } from 'react-icons/fi'
 import GradientBackground from '../common/GradientBackground'
 import HighlightModal from './HighlightModal'
@@ -52,56 +52,46 @@ export default function Experience() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Start continuous 3D rotation only after entrance sequence settles
-  useEffect(() => {
-    if (!isInView || isReducedMotion) {
-      return
-    }
-
-    const timer = setTimeout(() => {
-      setIsAssembled(true)
-    }, 1200)
-
-    return () => clearTimeout(timer)
-  }, [isInView, isReducedMotion])
-
-  const handleViewportEnter = useCallback(() => {
-    setIsInView(true)
-  }, [])
-
-  const handleViewportLeave = useCallback(() => {
-    setIsInView(false)
-    setIsAssembled(false)
-  }, [])
-
   // Dynamic responsive dimensions adapting to image count and screen size
   const dims = useMemo(() => {
     const count = highlights.length
     if (screenSize === 'mobile') {
       const radius = 120
-      const nodeSize = count > 28 ? 44 : 50
+      const nodeSize = count > 35 ? 40 : count > 28 ? 44 : 50
       return {
-        stageHeight: 380,
+        stageHeight: 410,
         radius,
         nodeSize,
+        minScale: 0.38,
+        maxScale: 1.12,
+        minOpacity: 0.30,
+        maxOpacity: 1.0,
       }
     }
     if (screenSize === 'tablet') {
-      const radius = 175
-      const nodeSize = count > 28 ? 58 : 66
+      const radius = 180
+      const nodeSize = count > 35 ? 52 : count > 28 ? 58 : 66
       return {
-        stageHeight: 520,
+        stageHeight: 540,
         radius,
         nodeSize,
+        minScale: 0.35,
+        maxScale: 1.22,
+        minOpacity: 0.30,
+        maxOpacity: 1.0,
       }
     }
     // Desktop
-    const radius = 230
-    const nodeSize = count > 28 ? 72 : 82
+    const radius = 235
+    const nodeSize = count > 35 ? 64 : count > 28 ? 72 : 82
     return {
-      stageHeight: 640,
+      stageHeight: 650,
       radius,
       nodeSize,
+      minScale: 0.35,
+      maxScale: 1.30,
+      minOpacity: 0.30,
+      maxOpacity: 1.0,
     }
   }, [screenSize])
 
@@ -121,7 +111,68 @@ export default function Experience() {
     })
   }, [])
 
-  // Real-time 3D coordinate projection & depth shading
+  // Calculate depth order of each point at resting orientation for progressive back-to-front assembly
+  const depthRankMap = useMemo(() => {
+    const tilt = -12 * (Math.PI / 180)
+    const sinTilt = Math.sin(tilt)
+    const cosTilt = Math.cos(tilt)
+
+    const pointsWithDepth = sphericalPoints.map((pt, index) => {
+      const Z = pt.y * sinTilt + pt.z * cosTilt
+      return { index, Z }
+    })
+
+    // Sort ascending by Z depth (back nodes first, front nodes last)
+    pointsWithDepth.sort((a, b) => a.Z - b.Z)
+
+    const rankMap = new Map<number, number>()
+    pointsWithDepth.forEach((item, rank) => {
+      rankMap.set(item.index, rank)
+    })
+
+    return rankMap
+  }, [sphericalPoints])
+
+  // Start continuous 3D rotation only after entrance sequence settles
+  const assemblyTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleViewportEnter = useCallback(() => {
+    setIsInView(true)
+    setIsAssembled(false)
+
+    if (assemblyTimerRef.current) {
+      clearTimeout(assemblyTimerRef.current)
+    }
+
+    if (isReducedMotion) {
+      setIsAssembled(true)
+      return
+    }
+
+    // Assemble nodes progressively, then begin deliberate rotation at tuned 18s pace
+    assemblyTimerRef.current = setTimeout(() => {
+      setIsAssembled(true)
+    }, 1000)
+  }, [isReducedMotion])
+
+  const handleViewportLeave = useCallback(() => {
+    setIsInView(false)
+    setIsAssembled(false)
+
+    if (assemblyTimerRef.current) {
+      clearTimeout(assemblyTimerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (assemblyTimerRef.current) {
+        clearTimeout(assemblyTimerRef.current)
+      }
+    }
+  }, [])
+
+  // Real-time 3D coordinate projection & dynamic depth shading
   const updatePositions = useCallback(
     (alpha: number) => {
       const D = 900 // Perspective camera distance
@@ -131,6 +182,7 @@ export default function Experience() {
       const cosAlpha = Math.cos(alpha)
       const sinAlpha = Math.sin(alpha)
       const R = dims.radius
+      const { minScale, maxScale, minOpacity, maxOpacity } = dims
 
       for (let i = 0; i < sphericalPoints.length; i++) {
         const el = nodeRefs.current[i]
@@ -148,28 +200,39 @@ export default function Experience() {
         const Z = y1 * sinTilt + z1 * cosTilt
 
         // 3. Normalized depth (Z in [-1, 1] -> normZ in [0, 1])
-        const normZ = (Z + 1) / 2
+        const normZ = Math.max(0, Math.min(1, (Z + 1) / 2))
 
-        // 4. Perspective projection factor
+        // 4. Strong nonlinear depth curve: subtle back changes with rapid crescendo toward front-center
+        const depthCurve = Math.pow(normZ, 1.4)
+
+        // 5. Perspective projection factor
         const persp = D / (D - Z * R)
         const screenX = X * R * persp
         const screenY = Y * R * persp
 
-        // 5. Dynamic scale, opacity, and z-index derived from instantaneous 3D depth
+        // 6. Dynamic scale, opacity, and z-index derived continuously from 3D depth
         const isHovered = hoveredIdRef.current === highlights[i].id
-        const scale = (0.65 + 0.45 * normZ) * (isHovered ? 1.15 : 1)
-        const opacity = isHovered ? 1 : 0.38 + 0.62 * normZ
-        const zIndex = isHovered ? 350 : 10 + Math.round(normZ * 90)
+        const depthScale = minScale + depthCurve * (maxScale - minScale)
+        const depthOpacity = minOpacity + depthCurve * (maxOpacity - minOpacity)
+        const depthZIndex = 10 + Math.round(normZ * 800)
 
-        el.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`
-        el.style.opacity = `${opacity.toFixed(3)}`
-        el.style.zIndex = `${zIndex}`
+        const finalOpacity = isHovered ? 1 : depthOpacity
+        const finalZIndex = isHovered ? 1000 : depthZIndex
+
+        el.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${depthScale.toFixed(3)})`
+        el.style.opacity = finalOpacity.toFixed(3)
+        el.style.zIndex = String(finalZIndex)
       }
     },
-    [sphericalPoints, dims.radius]
+    [sphericalPoints, dims]
   )
 
-  // Continuous 3D rotation loop
+  // Synchronize positions whenever responsive dimensions or points change
+  useEffect(() => {
+    updatePositions(angleRef.current)
+  }, [updatePositions])
+
+  // Continuous 3D rotation loop tuned to 18 seconds per revolution
   useEffect(() => {
     if (isReducedMotion) {
       updatePositions(0)
@@ -177,7 +240,7 @@ export default function Experience() {
     }
 
     let animationFrameId: number
-    const rotationDuration = 42 // 42 seconds per complete revolution
+    const rotationDuration = 18 // 18 seconds per complete revolution
     const rotationSpeed = (Math.PI * 2) / rotationDuration
 
     const animate = (time: number) => {
@@ -202,23 +265,38 @@ export default function Experience() {
     }
   }, [isInView, isAssembled, selectedHighlight, isReducedMotion, updatePositions])
 
-  // Framer Motion entrance variants matching WORKS section language
+  // Mouse hover handlers ensuring immediate tactile feedback without waiting for next animation frame
+  const handleMouseEnter = useCallback(
+    (item: Highlight) => {
+      setHoveredHighlight(item)
+      hoveredIdRef.current = item.id
+      updatePositions(angleRef.current)
+    },
+    [updatePositions]
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredHighlight(null)
+    hoveredIdRef.current = null
+    updatePositions(angleRef.current)
+  }, [updatePositions])
+
+  // Framer Motion entrance variants matching the portfolio motion language
   const headingVariants: Variants = {
     hidden: {
       opacity: 0,
-      y: isReducedMotion ? 0 : 36,
-      scale: isReducedMotion ? 1 : 0.94,
-      filter: isReducedMotion ? 'none' : 'blur(8px)',
+      y: isReducedMotion ? 0 : 32,
+      scale: isReducedMotion ? 1 : 0.95,
+      filter: isReducedMotion ? 'none' : 'blur(6px)',
     },
     visible: {
-      opacity: [0, 1, 1],
-      y: isReducedMotion ? 0 : [36, -2, 0],
-      scale: isReducedMotion ? 1 : [0.94, 1.015, 1],
-      filter: isReducedMotion ? 'none' : ['blur(8px)', 'blur(0px)', 'blur(0px)'],
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: 'blur(0px)',
       transition: {
-        duration: isReducedMotion ? 0 : 0.65,
-        times: [0, 0.7, 1],
-        ease: ['easeOut', 'easeInOut'],
+        duration: isReducedMotion ? 0 : 0.6,
+        ease: [0.22, 1, 0.36, 1],
       },
     },
   }
@@ -232,14 +310,79 @@ export default function Experience() {
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
       filter: 'blur(0px)',
       transition: {
         duration: isReducedMotion ? 0 : 0.5,
-        delay: isReducedMotion ? 0 : 0.18,
+        delay: isReducedMotion ? 0 : 0.16,
         ease: [0.22, 1, 0.36, 1],
       },
     },
+  }
+
+  const globeContainerVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      scale: isReducedMotion ? 1 : 0.86,
+      filter: isReducedMotion ? 'none' : 'blur(8px)',
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: {
+        duration: isReducedMotion ? 0 : 0.7,
+        delay: isReducedMotion ? 0 : 0.22,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  const equatorRingVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      scale: isReducedMotion ? 1 : 0.8,
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: isReducedMotion ? 0 : 0.6,
+        delay: isReducedMotion ? 0 : 0.28,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  const ambientGlowVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      scale: isReducedMotion ? 1 : 0.7,
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: isReducedMotion ? 0 : 0.8,
+        delay: isReducedMotion ? 0 : 0.28,
+        ease: 'easeOut',
+      },
+    },
+  }
+
+  const nodeAssemblyVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      scale: isReducedMotion ? 1 : 0.7,
+    },
+    visible: (rank: number) => ({
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: isReducedMotion ? 0 : 0.42,
+        delay: isReducedMotion ? 0 : 0.32 + rank * 0.016,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    }),
   }
 
   const footerVariants: Variants = {
@@ -252,7 +395,7 @@ export default function Experience() {
       y: 0,
       transition: {
         duration: isReducedMotion ? 0 : 0.5,
-        delay: isReducedMotion ? 0 : 1.1,
+        delay: isReducedMotion ? 0 : 1.0,
         ease: [0.22, 1, 0.36, 1],
       },
     },
@@ -274,11 +417,14 @@ export default function Experience() {
       id="experience"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: false, amount: 0.12 }}
+      viewport={{ once: false, amount: 0.15 }}
       onViewportEnter={handleViewportEnter}
       onViewportLeave={handleViewportLeave}
       className="w-full py-20 sm:py-28 relative overflow-hidden"
     >
+      {/* Anchor alias so both #highlights and #experience navigate cleanly */}
+      <div id="highlights" className="sr-only" aria-hidden="true" tabIndex={-1} />
+
       {/* Ambient background lighting */}
       <GradientBackground
         sectionId="experience"
@@ -310,7 +456,8 @@ export default function Experience() {
       </div>
 
       {/* 3D Sphere Canvas Container */}
-      <div
+      <motion.div
+        variants={globeContainerVariants}
         className="relative mx-auto w-full max-w-5xl flex items-center justify-center select-none"
         style={{
           height: `${dims.stageHeight}px`,
@@ -318,7 +465,8 @@ export default function Experience() {
         }}
       >
         {/* Subtle Central Ambient Glow */}
-        <div
+        <motion.div
+          variants={ambientGlowVariants}
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/[0.06] blur-3xl z-0"
           style={{
@@ -328,7 +476,8 @@ export default function Experience() {
         />
 
         {/* Faint Equator Guide Ring */}
-        <div
+        <motion.div
+          variants={equatorRingVariants}
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.035] z-0"
           style={{
@@ -346,14 +495,18 @@ export default function Experience() {
           const X = pt.x
           const Y = pt.y * cosTilt - pt.z * sinTilt
           const Z = pt.y * sinTilt + pt.z * cosTilt
-          const normZ = (Z + 1) / 2
+          const normZ = Math.max(0, Math.min(1, (Z + 1) / 2))
+          const depthCurve = Math.pow(normZ, 1.4)
           const D = 900
           const persp = D / (D - Z * dims.radius)
           const initX = X * dims.radius * persp
           const initY = Y * dims.radius * persp
-          const initScale = 0.65 + 0.45 * normZ
-          const initOpacity = 0.38 + 0.62 * normZ
-          const initZIndex = 10 + Math.round(normZ * 90)
+          const initScale = dims.minScale + depthCurve * (dims.maxScale - dims.minScale)
+          const initOpacity = dims.minOpacity + depthCurve * (dims.maxOpacity - dims.minOpacity)
+          const initZIndex = 10 + Math.round(normZ * 800)
+
+          const isHovered = hoveredHighlight?.id === item.id
+          const rank = depthRankMap.get(idx) ?? 0
 
           return (
             <div
@@ -369,50 +522,82 @@ export default function Experience() {
                 marginTop: `-${dims.nodeSize / 2}px`,
                 transform: `translate3d(${initX.toFixed(2)}px, ${initY.toFixed(2)}px, 0) scale(${initScale.toFixed(3)})`,
                 opacity: initOpacity.toFixed(3),
-                zIndex: initZIndex,
+                zIndex: isHovered ? 1000 : initZIndex,
+                transformStyle: 'preserve-3d',
+                transition: 'opacity 0.28s ease',
               }}
             >
-              <button
-                type="button"
-                onClick={() => handleOpenHighlight(item)}
-                onMouseEnter={() => setHoveredHighlight(item)}
-                onMouseLeave={() => setHoveredHighlight(null)}
-                aria-label={`View highlight: ${item.title}`}
-                className="
-                  group relative flex items-center justify-center rounded-full
-                  overflow-hidden border border-white/25 bg-zinc-950 shadow-md
-                  transition-[box-shadow,border-color] duration-200 ease-out
-                  hover:border-white/80 hover:shadow-2xl hover:shadow-cyan-900/40
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95
-                  w-full h-full
-                "
+              {/* Progressive Depth Assembly Reveal Wrapper (Layer 2) */}
+              <motion.div
+                variants={nodeAssemblyVariants}
+                custom={rank}
+                className="w-full h-full"
+                style={{ transformStyle: 'preserve-3d' }}
               >
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  sizes={`${dims.nodeSize}px`}
-                  className="object-cover pointer-events-none"
-                />
-              </button>
+                {/* Interactive Photo Node Button (Layer 3 - Hover pop) */}
+                <button
+                  type="button"
+                  onClick={() => handleOpenHighlight(item)}
+                  onMouseEnter={() => handleMouseEnter(item)}
+                  onMouseLeave={handleMouseLeave}
+                  onFocus={() => handleMouseEnter(item)}
+                  onBlur={handleMouseLeave}
+                  aria-label={`View highlight: ${item.name}`}
+                  className="
+                    group relative flex items-center justify-center rounded-full
+                    overflow-hidden border bg-zinc-950
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95
+                    w-full h-full cursor-pointer
+                  "
+                  style={{
+                    transform: isHovered
+                      ? 'translateZ(24px) scale(1.14)'
+                      : 'translateZ(0px) scale(1)',
+                    borderColor: isHovered
+                      ? 'rgba(255, 255, 255, 0.75)'
+                      : 'rgba(255, 255, 255, 0.22)',
+                    boxShadow: isHovered
+                      ? '0 20px 35px -5px rgba(0, 0, 0, 0.85), 0 0 15px 1px rgba(255, 255, 255, 0.08)'
+                      : '0 4px 18px -2px rgba(0, 0, 0, 0.6)',
+                    transition:
+                      'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease, box-shadow 0.28s ease',
+                  }}
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes={`${dims.nodeSize}px`}
+                    className="object-cover pointer-events-none select-none"
+                  />
+                </button>
+              </motion.div>
 
               {/* Minimal Hover Label with Connector */}
-              {hoveredHighlight?.id === item.id && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-[400] whitespace-nowrap">
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-full border border-white/20 bg-zinc-950/95 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl">
-                      <span className="font-semibold text-white">
-                        {item.title}
-                      </span>
+              <AnimatePresence>
+                {isHovered && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 3, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-[400] whitespace-nowrap"
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="rounded-full border border-white/20 bg-zinc-950/95 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl">
+                        <span className="font-semibold text-white">
+                          {item.name}
+                        </span>
+                      </div>
+                      <div className="w-[1px] h-1.5 bg-white/40" />
                     </div>
-                    <div className="w-[1px] h-1.5 bg-white/40" />
-                  </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Global LinkedIn Certificates Action Link */}
       <motion.div
@@ -430,11 +615,10 @@ export default function Experience() {
           "
           aria-label="View all certifications on LinkedIn"
         >
-          <span>View More Certificates</span>
+          <span>Also View My Certificates</span>
           <FiArrowUpRight className="h-4 w-4" />
         </a>
       </motion.div>
-
       {/* Interactive Image-Only Detail Modal */}
       <HighlightModal
         highlight={selectedHighlight}

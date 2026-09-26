@@ -19,6 +19,7 @@ export default function Home() {
         <Hero />
         <Projects />
         <About />
+        <Experience />
         <MySkills />
 
         <section id="education" className="min-h-screen w-full flex items-center justify-center px-6 py-20 sm:px-12">
@@ -28,7 +29,6 @@ export default function Home() {
           </div>
         </section>
 
-        <Experience />
         <Contact />
       </main>
       <FixedSocialRail />

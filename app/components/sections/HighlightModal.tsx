@@ -78,7 +78,7 @@ export default function HighlightModal({ highlight, onClose }: HighlightModalPro
             <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-zinc-950/90 shadow-2xl shadow-black/90">
               <Image
                 src={highlight.image}
-                alt={highlight.title || 'Highlight preview'}
+                alt={highlight.name || highlight.title || 'Highlight preview'}
                 width={800}
                 height={800}
                 priority
