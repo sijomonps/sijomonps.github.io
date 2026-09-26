@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer
 import { FiArrowUpRight } from 'react-icons/fi'
 import GradientBackground from '../common/GradientBackground'
 import HighlightModal from './HighlightModal'
+import Recommendations from './Recommendations'
 import { highlights, type Highlight } from '../../data/highlights'
 
 type ScreenSize = 'mobile' | 'tablet' | 'desktop'
@@ -650,6 +651,14 @@ export default function Experience() {
           <FiArrowUpRight className="h-4 w-4" />
         </a>
       </motion.div>
+
+      {/* Subtle Divider between Photo Globe and Recommendations */}
+      <div className="max-w-4xl mx-auto my-14 sm:my-20 px-6 relative z-10" aria-hidden="true">
+        <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      </div>
+
+      {/* What People Say - Recommendations Component */}
+      <Recommendations />
       {/* Interactive Image-Only Detail Modal */}
       <HighlightModal
         highlight={selectedHighlight}
