@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import { FiArrowUpRight } from 'react-icons/fi'
@@ -17,7 +17,6 @@ export default function Experience() {
   // Interaction & modal state
   const [selectedHighlight, setSelectedHighlight] = useState<Highlight | null>(null)
   const [hoveredHighlight, setHoveredHighlight] = useState<Highlight | null>(null)
-  const [hoveredOrbitIndex, setHoveredOrbitIndex] = useState<number | null>(null)
 
   // Assembly & entrance animation state
   const [isInView, setIsInView] = useState(false)
@@ -25,6 +24,16 @@ export default function Experience() {
 
   // Responsive layout state
   const [screenSize, setScreenSize] = useState<ScreenSize>('desktop')
+
+  // Animation frame refs
+  const nodeRefs = useRef<(HTMLDivElement | null)[]>([])
+  const angleRef = useRef(0)
+  const lastTimeRef = useRef(0)
+  const hoveredIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    hoveredIdRef.current = hoveredHighlight?.id || null
+  }, [hoveredHighlight])
 
   useEffect(() => {
     const handleResize = () => {
@@ -43,7 +52,7 @@ export default function Experience() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Start continuous orbit only after entrance sequence settles
+  // Start continuous 3D rotation only after entrance sequence settles
   useEffect(() => {
     if (!isInView || isReducedMotion) {
       return
@@ -51,7 +60,7 @@ export default function Experience() {
 
     const timer = setTimeout(() => {
       setIsAssembled(true)
-    }, 1400)
+    }, 1200)
 
     return () => clearTimeout(timer)
   }, [isInView, isReducedMotion])
@@ -65,49 +74,133 @@ export default function Experience() {
     setIsAssembled(false)
   }, [])
 
-  // Split highlights into Center (1), Inner (4), Middle (7), Outer (8)
-  const centerItem = useMemo(
-    () => highlights.find((h) => h.featured) || highlights[0],
-    []
-  )
-  const innerItems = useMemo(() => highlights.slice(1, 5), [])
-  const middleItems = useMemo(() => highlights.slice(5, 12), [])
-  const outerItems = useMemo(() => highlights.slice(12, 20), [])
-
-  // Responsive radii and node dimensions
+  // Dynamic responsive dimensions adapting to image count and screen size
   const dims = useMemo(() => {
+    const count = highlights.length
     if (screenSize === 'mobile') {
+      const radius = 120
+      const nodeSize = count > 28 ? 44 : 50
       return {
-        stageHeight: 330,
-        centerSize: 66,
-        orbits: [
-          { radius: 60, nodeSize: 42, ringOpacity: 0.07 },
-          { radius: 95, nodeSize: 36, ringOpacity: 0.055 },
-          { radius: 135, nodeSize: 30, ringOpacity: 0.045 },
-        ],
+        stageHeight: 380,
+        radius,
+        nodeSize,
       }
     }
     if (screenSize === 'tablet') {
+      const radius = 175
+      const nodeSize = count > 28 ? 58 : 66
       return {
-        stageHeight: 490,
-        centerSize: 92,
-        orbits: [
-          { radius: 96, nodeSize: 58, ringOpacity: 0.07 },
-          { radius: 152, nodeSize: 50, ringOpacity: 0.055 },
-          { radius: 215, nodeSize: 42, ringOpacity: 0.045 },
-        ],
+        stageHeight: 520,
+        radius,
+        nodeSize,
       }
     }
+    // Desktop
+    const radius = 230
+    const nodeSize = count > 28 ? 72 : 82
     return {
-      stageHeight: 630,
-      centerSize: 116,
-      orbits: [
-        { radius: 128, nodeSize: 72, ringOpacity: 0.07 },
-        { radius: 200, nodeSize: 62, ringOpacity: 0.055 },
-        { radius: 280, nodeSize: 52, ringOpacity: 0.045 },
-      ],
+      stageHeight: 640,
+      radius,
+      nodeSize,
     }
   }, [screenSize])
+
+  // Algorithmic Fibonacci-Sphere Distribution across the 3D spherical surface
+  const sphericalPoints = useMemo(() => {
+    const count = highlights.length
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5)) // ~2.39996 rad
+
+    return highlights.map((_, i) => {
+      // y from +1 (top pole) to -1 (bottom pole)
+      const y = 1 - (2 * i + 1) / count
+      const r = Math.sqrt(Math.max(0, 1 - y * y))
+      const theta = i * goldenAngle
+      const x = Math.cos(theta) * r
+      const z = Math.sin(theta) * r
+      return { x, y, z }
+    })
+  }, [])
+
+  // Real-time 3D coordinate projection & depth shading
+  const updatePositions = useCallback(
+    (alpha: number) => {
+      const D = 900 // Perspective camera distance
+      const tilt = -12 * (Math.PI / 180) // -12 degree pitch tilt around X axis
+      const cosTilt = Math.cos(tilt)
+      const sinTilt = Math.sin(tilt)
+      const cosAlpha = Math.cos(alpha)
+      const sinAlpha = Math.sin(alpha)
+      const R = dims.radius
+
+      for (let i = 0; i < sphericalPoints.length; i++) {
+        const el = nodeRefs.current[i]
+        if (!el) continue
+
+        const pt = sphericalPoints[i]
+        // 1. Primary continuous rotation around Y axis
+        const x1 = pt.x * cosAlpha - pt.z * sinAlpha
+        const y1 = pt.y
+        const z1 = pt.x * sinAlpha + pt.z * cosAlpha
+
+        // 2. Subtle pitch tilt around X axis
+        const X = x1
+        const Y = y1 * cosTilt - z1 * sinTilt
+        const Z = y1 * sinTilt + z1 * cosTilt
+
+        // 3. Normalized depth (Z in [-1, 1] -> normZ in [0, 1])
+        const normZ = (Z + 1) / 2
+
+        // 4. Perspective projection factor
+        const persp = D / (D - Z * R)
+        const screenX = X * R * persp
+        const screenY = Y * R * persp
+
+        // 5. Dynamic scale, opacity, and z-index derived from instantaneous 3D depth
+        const isHovered = hoveredIdRef.current === highlights[i].id
+        const scale = (0.65 + 0.45 * normZ) * (isHovered ? 1.15 : 1)
+        const opacity = isHovered ? 1 : 0.38 + 0.62 * normZ
+        const zIndex = isHovered ? 350 : 10 + Math.round(normZ * 90)
+
+        el.style.transform = `translate3d(${screenX.toFixed(2)}px, ${screenY.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`
+        el.style.opacity = `${opacity.toFixed(3)}`
+        el.style.zIndex = `${zIndex}`
+      }
+    },
+    [sphericalPoints, dims.radius]
+  )
+
+  // Continuous 3D rotation loop
+  useEffect(() => {
+    if (isReducedMotion) {
+      updatePositions(0)
+      return
+    }
+
+    let animationFrameId: number
+    const rotationDuration = 42 // 42 seconds per complete revolution
+    const rotationSpeed = (Math.PI * 2) / rotationDuration
+
+    const animate = (time: number) => {
+      if (!lastTimeRef.current) lastTimeRef.current = time
+      const delta = Math.min((time - lastTimeRef.current) / 1000, 0.1)
+      lastTimeRef.current = time
+
+      const isPaused = Boolean(hoveredIdRef.current) || Boolean(selectedHighlight)
+
+      if (isInView && isAssembled && !isPaused) {
+        angleRef.current = (angleRef.current + delta * rotationSpeed) % (Math.PI * 2)
+        updatePositions(angleRef.current)
+      }
+
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    animationFrameId = requestAnimationFrame(animate)
+    return () => {
+      cancelAnimationFrame(animationFrameId)
+      lastTimeRef.current = 0
+    }
+  }, [isInView, isAssembled, selectedHighlight, isReducedMotion, updatePositions])
 
   // Framer Motion entrance variants matching WORKS section language
   const headingVariants: Variants = {
@@ -165,23 +258,6 @@ export default function Experience() {
     },
   }
 
-  // Animation play states
-  const isInnerPaused =
-    !isAssembled ||
-    isReducedMotion ||
-    hoveredOrbitIndex === 0 ||
-    Boolean(selectedHighlight)
-  const isMiddlePaused =
-    !isAssembled ||
-    isReducedMotion ||
-    hoveredOrbitIndex === 1 ||
-    Boolean(selectedHighlight)
-  const isOuterPaused =
-    !isAssembled ||
-    isReducedMotion ||
-    hoveredOrbitIndex === 2 ||
-    Boolean(selectedHighlight)
-
   const handleOpenHighlight = useCallback((item: Highlight) => {
     setSelectedHighlight(item)
   }, [])
@@ -233,387 +309,109 @@ export default function Experience() {
         </div>
       </div>
 
-      {/* Orbital Globe Canvas Container */}
+      {/* 3D Sphere Canvas Container */}
       <div
         className="relative mx-auto w-full max-w-5xl flex items-center justify-center select-none"
-        style={{ height: `${dims.stageHeight}px` }}
+        style={{
+          height: `${dims.stageHeight}px`,
+          perspective: '1000px',
+        }}
       >
-        {/* Subtle Center Glow */}
+        {/* Subtle Central Ambient Glow */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/10 blur-3xl z-0"
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/[0.06] blur-3xl z-0"
           style={{
-            width: `${dims.centerSize * 2.2}px`,
-            height: `${dims.centerSize * 2.2}px`,
+            width: `${dims.radius * 1.8}px`,
+            height: `${dims.radius * 1.8}px`,
           }}
         />
 
-        {/* 1. Subtle Orbital Guide Rings */}
-        {dims.orbits.map((orbit, idx) => (
-          <div
-            key={`ring-${idx}`}
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white z-0 transition-opacity duration-700"
-            style={{
-              width: `${orbit.radius * 2}px`,
-              height: `${orbit.radius * 2}px`,
-              borderColor: `rgba(255, 255, 255, ${orbit.ringOpacity})`,
-              opacity: isInView || isReducedMotion ? 1 : 0.6,
-            }}
-          />
-        ))}
-
-        {/* 2. Outer Orbit (8 items, Clockwise) */}
+        {/* Faint Equator Guide Ring */}
         <div
-          className="absolute left-1/2 top-1/2 pointer-events-none z-10 animate-orbit-cw-outer"
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.035] z-0"
           style={{
-            width: `${dims.orbits[2].radius * 2}px`,
-            height: `${dims.orbits[2].radius * 2}px`,
-            marginLeft: `-${dims.orbits[2].radius}px`,
-            marginTop: `-${dims.orbits[2].radius}px`,
-            animationPlayState: isOuterPaused ? 'paused' : 'running',
+            width: `${dims.radius * 2}px`,
+            height: `${dims.radius * 2}px`,
           }}
-        >
-          {outerItems.map((item, idx) => {
-            const angle = 10 + (idx / outerItems.length) * 360
-            const rad = (angle * Math.PI) / 180
-            const x = dims.orbits[2].radius + dims.orbits[2].radius * Math.cos(rad)
-            const y = dims.orbits[2].radius + dims.orbits[2].radius * Math.sin(rad)
-            const seqIndex = 11 + idx
+        />
 
-            return (
-              <div
-                key={item.id}
-                className="absolute pointer-events-auto"
-                style={{
-                  width: `${dims.orbits[2].nodeSize}px`,
-                  height: `${dims.orbits[2].nodeSize}px`,
-                  left: `${x}px`,
-                  top: `${y}px`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                {/* Counter-rotation to keep photograph upright */}
-                <div
-                  className="animate-counter-cw-outer w-full h-full"
-                  style={{
-                    animationPlayState: isOuterPaused ? 'paused' : 'running',
-                  }}
-                >
-                  <div
-                    className="relative w-full h-full transition-all duration-500 ease-out"
-                    style={{
-                      opacity: isInView || isReducedMotion ? 1 : 0.85,
-                      transform: isInView || isReducedMotion ? 'scale(1)' : 'scale(0.85)',
-                      transitionDelay: isReducedMotion ? '0s' : `${0.2 + seqIndex * 0.035}s`,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleOpenHighlight(item)}
-                      onMouseEnter={() => {
-                        setHoveredHighlight(item)
-                        setHoveredOrbitIndex(2)
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredHighlight(null)
-                        setHoveredOrbitIndex(null)
-                      }}
-                      aria-label={`View highlight: ${item.title}`}
-                      className="
-                        group relative flex items-center justify-center rounded-full
-                        overflow-hidden border border-white/20 bg-zinc-950/80 shadow-lg
-                        transition-all duration-300 ease-out hover:scale-115 hover:border-white/80
-                        hover:shadow-2xl hover:shadow-cyan-900/30 hover:z-50 focus:outline-none
-                        focus-visible:ring-2 focus-visible:ring-white active:scale-95
-                        w-full h-full
-                      "
-                      style={{ opacity: 0.82 }}
-                    >
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        sizes={`${dims.orbits[2].nodeSize}px`}
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </button>
+        {/* 3D Spherical Photo Cloud */}
+        {highlights.map((item, idx) => {
+          const pt = sphericalPoints[idx]
+          const tilt = -12 * (Math.PI / 180)
+          const cosTilt = Math.cos(tilt)
+          const sinTilt = Math.sin(tilt)
+          const X = pt.x
+          const Y = pt.y * cosTilt - pt.z * sinTilt
+          const Z = pt.y * sinTilt + pt.z * cosTilt
+          const normZ = (Z + 1) / 2
+          const D = 900
+          const persp = D / (D - Z * dims.radius)
+          const initX = X * dims.radius * persp
+          const initY = Y * dims.radius * persp
+          const initScale = 0.65 + 0.45 * normZ
+          const initOpacity = 0.38 + 0.62 * normZ
+          const initZIndex = 10 + Math.round(normZ * 90)
 
-                    {/* Small Hover Label with Connector */}
-                    {hoveredHighlight?.id === item.id && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-50 whitespace-nowrap">
-                        <div className="flex flex-col items-center">
-                          <div className="rounded-full border border-white/20 bg-zinc-950/92 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl flex items-center gap-1.5">
-                            <span className="font-semibold text-white">
-                              {item.title}
-                            </span>
-                            {item.year && (
-                              <span className="text-white/40">· {item.year}</span>
-                            )}
-                          </div>
-                          <div className="w-[1px] h-1.5 bg-white/40" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* 3. Middle Orbit (7 items, Counter-Clockwise) */}
-        <div
-          className="absolute left-1/2 top-1/2 pointer-events-none z-20 animate-orbit-ccw-middle"
-          style={{
-            width: `${dims.orbits[1].radius * 2}px`,
-            height: `${dims.orbits[1].radius * 2}px`,
-            marginLeft: `-${dims.orbits[1].radius}px`,
-            marginTop: `-${dims.orbits[1].radius}px`,
-            animationPlayState: isMiddlePaused ? 'paused' : 'running',
-          }}
-        >
-          {middleItems.map((item, idx) => {
-            const angle = 25 + (idx / middleItems.length) * 360
-            const rad = (angle * Math.PI) / 180
-            const x = dims.orbits[1].radius + dims.orbits[1].radius * Math.cos(rad)
-            const y = dims.orbits[1].radius + dims.orbits[1].radius * Math.sin(rad)
-            const seqIndex = 4 + idx
-
-            return (
-              <div
-                key={item.id}
-                className="absolute pointer-events-auto"
-                style={{
-                  width: `${dims.orbits[1].nodeSize}px`,
-                  height: `${dims.orbits[1].nodeSize}px`,
-                  left: `${x}px`,
-                  top: `${y}px`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                {/* Counter-rotation to keep photograph upright */}
-                <div
-                  className="animate-counter-ccw-middle w-full h-full"
-                  style={{
-                    animationPlayState: isMiddlePaused ? 'paused' : 'running',
-                  }}
-                >
-                  <div
-                    className="relative w-full h-full transition-all duration-500 ease-out"
-                    style={{
-                      opacity: isInView || isReducedMotion ? 1 : 0.85,
-                      transform: isInView || isReducedMotion ? 'scale(1)' : 'scale(0.85)',
-                      transitionDelay: isReducedMotion ? '0s' : `${0.2 + seqIndex * 0.035}s`,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleOpenHighlight(item)}
-                      onMouseEnter={() => {
-                        setHoveredHighlight(item)
-                        setHoveredOrbitIndex(1)
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredHighlight(null)
-                        setHoveredOrbitIndex(null)
-                      }}
-                      aria-label={`View highlight: ${item.title}`}
-                      className="
-                        group relative flex items-center justify-center rounded-full
-                        overflow-hidden border border-white/25 bg-zinc-950/85 shadow-lg
-                        transition-all duration-300 ease-out hover:scale-112 hover:border-white/85
-                        hover:shadow-2xl hover:shadow-cyan-900/40 hover:z-50 focus:outline-none
-                        focus-visible:ring-2 focus-visible:ring-white active:scale-95
-                        w-full h-full
-                      "
-                      style={{ opacity: 0.9 }}
-                    >
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        sizes={`${dims.orbits[1].nodeSize}px`}
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </button>
-
-                    {/* Small Hover Label with Connector */}
-                    {hoveredHighlight?.id === item.id && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-50 whitespace-nowrap">
-                        <div className="flex flex-col items-center">
-                          <div className="rounded-full border border-white/20 bg-zinc-950/92 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl flex items-center gap-1.5">
-                            <span className="font-semibold text-white">
-                              {item.title}
-                            </span>
-                            {item.year && (
-                              <span className="text-white/40">· {item.year}</span>
-                            )}
-                          </div>
-                          <div className="w-[1px] h-1.5 bg-white/40" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* 4. Inner Orbit (4 items, Clockwise) */}
-        <div
-          className="absolute left-1/2 top-1/2 pointer-events-none z-30 animate-orbit-cw-inner"
-          style={{
-            width: `${dims.orbits[0].radius * 2}px`,
-            height: `${dims.orbits[0].radius * 2}px`,
-            marginLeft: `-${dims.orbits[0].radius}px`,
-            marginTop: `-${dims.orbits[0].radius}px`,
-            animationPlayState: isInnerPaused ? 'paused' : 'running',
-          }}
-        >
-          {innerItems.map((item, idx) => {
-            const angle = 45 + (idx / innerItems.length) * 360
-            const rad = (angle * Math.PI) / 180
-            const x = dims.orbits[0].radius + dims.orbits[0].radius * Math.cos(rad)
-            const y = dims.orbits[0].radius + dims.orbits[0].radius * Math.sin(rad)
-            const seqIndex = idx
-
-            return (
-              <div
-                key={item.id}
-                className="absolute pointer-events-auto"
-                style={{
-                  width: `${dims.orbits[0].nodeSize}px`,
-                  height: `${dims.orbits[0].nodeSize}px`,
-                  left: `${x}px`,
-                  top: `${y}px`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                {/* Counter-rotation to keep photograph upright */}
-                <div
-                  className="animate-counter-cw-inner w-full h-full"
-                  style={{
-                    animationPlayState: isInnerPaused ? 'paused' : 'running',
-                  }}
-                >
-                  <div
-                    className="relative w-full h-full transition-all duration-500 ease-out"
-                    style={{
-                      opacity: isInView || isReducedMotion ? 1 : 0.85,
-                      transform: isInView || isReducedMotion ? 'scale(1)' : 'scale(0.85)',
-                      transitionDelay: isReducedMotion ? '0s' : `${0.2 + seqIndex * 0.035}s`,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleOpenHighlight(item)}
-                      onMouseEnter={() => {
-                        setHoveredHighlight(item)
-                        setHoveredOrbitIndex(0)
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredHighlight(null)
-                        setHoveredOrbitIndex(null)
-                      }}
-                      aria-label={`View highlight: ${item.title}`}
-                      className="
-                        group relative flex items-center justify-center rounded-full
-                        overflow-hidden border border-white/30 bg-zinc-950/90 shadow-xl
-                        transition-all duration-300 ease-out hover:scale-110 hover:border-white/90
-                        hover:shadow-2xl hover:shadow-cyan-900/50 hover:z-50 focus:outline-none
-                        focus-visible:ring-2 focus-visible:ring-white active:scale-95
-                        w-full h-full
-                      "
-                      style={{ opacity: 0.96 }}
-                    >
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        sizes={`${dims.orbits[0].nodeSize}px`}
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </button>
-
-                    {/* Small Hover Label with Connector */}
-                    {hoveredHighlight?.id === item.id && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-50 whitespace-nowrap">
-                        <div className="flex flex-col items-center">
-                          <div className="rounded-full border border-white/20 bg-zinc-950/92 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl flex items-center gap-1.5">
-                            <span className="font-semibold text-white">
-                              {item.title}
-                            </span>
-                            {item.year && (
-                              <span className="text-white/40">· {item.year}</span>
-                            )}
-                          </div>
-                          <div className="w-[1px] h-1.5 bg-white/40" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* 5. Center Featured Image Anchor */}
-        <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 transition-transform duration-700 ease-out"
-          style={{
-            transform: `translate(-50%, -50%) ${isInView || isReducedMotion ? 'scale(1)' : 'scale(0.85)'}`,
-          }}
-        >
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => handleOpenHighlight(centerItem)}
-              onMouseEnter={() => setHoveredHighlight(centerItem)}
-              onMouseLeave={() => setHoveredHighlight(null)}
-              aria-label={`Featured highlight: ${centerItem.title}`}
-              className="
-                group relative flex items-center justify-center rounded-full
-                overflow-hidden border-2 border-white/40 bg-zinc-950 shadow-2xl
-                transition-all duration-300 ease-out hover:scale-108 hover:border-white
-                hover:shadow-cyan-900/60 focus:outline-none focus-visible:ring-2
-                focus-visible:ring-white active:scale-95
-              "
+          return (
+            <div
+              key={item.id}
+              ref={(el) => {
+                nodeRefs.current[idx] = el
+              }}
+              className="absolute left-1/2 top-1/2 pointer-events-auto will-change-transform"
               style={{
-                width: `${dims.centerSize}px`,
-                height: `${dims.centerSize}px`,
+                width: `${dims.nodeSize}px`,
+                height: `${dims.nodeSize}px`,
+                marginLeft: `-${dims.nodeSize / 2}px`,
+                marginTop: `-${dims.nodeSize / 2}px`,
+                transform: `translate3d(${initX.toFixed(2)}px, ${initY.toFixed(2)}px, 0) scale(${initScale.toFixed(3)})`,
+                opacity: initOpacity.toFixed(3),
+                zIndex: initZIndex,
               }}
             >
-              <Image
-                src={centerItem.image}
-                alt={centerItem.title}
-                fill
-                priority
-                sizes={`${dims.centerSize}px`}
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            </button>
+              <button
+                type="button"
+                onClick={() => handleOpenHighlight(item)}
+                onMouseEnter={() => setHoveredHighlight(item)}
+                onMouseLeave={() => setHoveredHighlight(null)}
+                aria-label={`View highlight: ${item.title}`}
+                className="
+                  group relative flex items-center justify-center rounded-full
+                  overflow-hidden border border-white/25 bg-zinc-950 shadow-md
+                  transition-[box-shadow,border-color] duration-200 ease-out
+                  hover:border-white/80 hover:shadow-2xl hover:shadow-cyan-900/40
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95
+                  w-full h-full
+                "
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  sizes={`${dims.nodeSize}px`}
+                  className="object-cover pointer-events-none"
+                />
+              </button>
 
-            {/* Small Hover Label with Connector for Center */}
-            {hoveredHighlight?.id === centerItem.id && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-50 whitespace-nowrap">
-                <div className="flex flex-col items-center">
-                  <div className="rounded-full border border-white/20 bg-zinc-950/95 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-md shadow-xl flex items-center gap-1.5">
-                    <span className="font-semibold text-white">
-                      {centerItem.title}
-                    </span>
-                    {centerItem.year && (
-                      <span className="text-white/40">· {centerItem.year}</span>
-                    )}
+              {/* Minimal Hover Label with Connector */}
+              {hoveredHighlight?.id === item.id && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-[400] whitespace-nowrap">
+                  <div className="flex flex-col items-center">
+                    <div className="rounded-full border border-white/20 bg-zinc-950/95 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl">
+                      <span className="font-semibold text-white">
+                        {item.title}
+                      </span>
+                    </div>
+                    <div className="w-[1px] h-1.5 bg-white/40" />
                   </div>
-                  <div className="w-[1px] h-2 bg-white/40" />
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {/* Global LinkedIn Certificates Action Link */}
