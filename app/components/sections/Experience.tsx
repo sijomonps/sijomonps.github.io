@@ -24,6 +24,7 @@ export default function Experience() {
 
   // Responsive layout state
   const [screenSize, setScreenSize] = useState<ScreenSize>('desktop')
+  const [viewportWidth, setViewportWidth] = useState<number>(1200)
 
   // Animation frame refs
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -38,6 +39,7 @@ export default function Experience() {
   useEffect(() => {
     const handleResize = () => {
       const w = window.innerWidth
+      setViewportWidth(w)
       if (w < 640) {
         setScreenSize('mobile')
       } else if (w < 1024) {
@@ -56,16 +58,22 @@ export default function Experience() {
   const dims = useMemo(() => {
     const count = highlights.length
     if (screenSize === 'mobile') {
-      const radius = 120
-      const nodeSize = count > 35 ? 40 : count > 28 ? 44 : 50
+      // Dedicated Mobile Close-Up View:
+      // Substantially tighter radius and closer camera distance create a dense,
+      // clustered 3D composition with controlled photo overlap and zero empty space.
+      const safeWidth = viewportWidth > 0 && viewportWidth < 640 ? viewportWidth : 390
+      const radius = Math.min(185, Math.max(150, Math.round(safeWidth * 0.42)))
+      const nodeSize = count > 35 ? 78 : count > 28 ? 82 : 88
       return {
-        stageHeight: 410,
+        stageHeight: Math.min(460, Math.max(390, Math.round(safeWidth * 1.08))),
         radius,
         nodeSize,
-        minScale: 0.38,
-        maxScale: 1.12,
-        minOpacity: 0.30,
+        minScale: 0.48,
+        maxScale: 1.28,
+        minOpacity: 0.38,
         maxOpacity: 1.0,
+        cameraDistance: 460,
+        curveExponent: 1.05,
       }
     }
     if (screenSize === 'tablet') {
@@ -79,9 +87,11 @@ export default function Experience() {
         maxScale: 1.22,
         minOpacity: 0.30,
         maxOpacity: 1.0,
+        cameraDistance: 800,
+        curveExponent: 1.3,
       }
     }
-    // Desktop
+    // Desktop - Exactly preserved
     const radius = 235
     const nodeSize = count > 35 ? 64 : count > 28 ? 72 : 82
     return {
@@ -92,8 +102,10 @@ export default function Experience() {
       maxScale: 1.30,
       minOpacity: 0.30,
       maxOpacity: 1.0,
+      cameraDistance: 900,
+      curveExponent: 1.4,
     }
-  }, [screenSize])
+  }, [screenSize, viewportWidth])
 
   // Algorithmic Fibonacci-Sphere Distribution across the 3D spherical surface
   const sphericalPoints = useMemo(() => {
@@ -175,14 +187,14 @@ export default function Experience() {
   // Real-time 3D coordinate projection & dynamic depth shading
   const updatePositions = useCallback(
     (alpha: number) => {
-      const D = 900 // Perspective camera distance
+      const D = dims.cameraDistance // Responsive perspective camera distance
       const tilt = -12 * (Math.PI / 180) // -12 degree pitch tilt around X axis
       const cosTilt = Math.cos(tilt)
       const sinTilt = Math.sin(tilt)
       const cosAlpha = Math.cos(alpha)
       const sinAlpha = Math.sin(alpha)
       const R = dims.radius
-      const { minScale, maxScale, minOpacity, maxOpacity } = dims
+      const { minScale, maxScale, minOpacity, maxOpacity, curveExponent } = dims
 
       for (let i = 0; i < sphericalPoints.length; i++) {
         const el = nodeRefs.current[i]
@@ -202,8 +214,8 @@ export default function Experience() {
         // 3. Normalized depth (Z in [-1, 1] -> normZ in [0, 1])
         const normZ = Math.max(0, Math.min(1, (Z + 1) / 2))
 
-        // 4. Strong nonlinear depth curve: subtle back changes with rapid crescendo toward front-center
-        const depthCurve = Math.pow(normZ, 1.4)
+        // 4. Responsive depth curve
+        const depthCurve = Math.pow(normZ, curveExponent)
 
         // 5. Perspective projection factor
         const persp = D / (D - Z * R)
@@ -435,12 +447,12 @@ export default function Experience() {
       />
 
       {/* Section Header */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 md:px-12 text-center relative z-10 mb-10 sm:mb-14">
+      <div className="max-w-7xl mx-auto px-4 min-[360px]:px-6 sm:px-10 md:px-12 text-center relative z-10 mb-8 sm:mb-12 md:mb-14">
         <div className="flex flex-col items-center justify-center text-center">
           <div className="overflow-hidden py-1">
             <motion.h2
               variants={headingVariants}
-              className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground leading-none text-center"
+              className="font-display text-4xl min-[360px]:text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground leading-none text-center"
             >
               HIGHLIGHTS
             </motion.h2>
@@ -448,22 +460,24 @@ export default function Experience() {
 
           <motion.p
             variants={subtitleVariants}
-            className="font-sans text-sm sm:text-base text-foreground/60 mt-3 max-w-xl mx-auto tracking-wide text-center"
+            className="font-sans text-xs min-[360px]:text-sm sm:text-base text-foreground/60 mt-3 max-w-xl mx-auto tracking-wide text-center px-2"
           >
             Moments, milestones, and experiences along the way.
           </motion.p>
         </div>
       </div>
 
-      {/* 3D Sphere Canvas Container */}
-      <motion.div
-        variants={globeContainerVariants}
-        className="relative mx-auto w-full max-w-5xl flex items-center justify-center select-none"
-        style={{
-          height: `${dims.stageHeight}px`,
-          perspective: '1000px',
-        }}
-      >
+      {/* HIGHLIGHTS 3D Globe Visual Wrapper with localized horizontal overflow clipping */}
+      <div className="relative w-full overflow-hidden flex items-center justify-center">
+        {/* 3D Sphere Canvas Container */}
+        <motion.div
+          variants={globeContainerVariants}
+          className="relative mx-auto w-full max-w-5xl flex items-center justify-center select-none"
+          style={{
+            height: `${dims.stageHeight}px`,
+            perspective: '1000px',
+          }}
+        >
         {/* Subtle Central Ambient Glow */}
         <motion.div
           variants={ambientGlowVariants}
@@ -496,8 +510,8 @@ export default function Experience() {
           const Y = pt.y * cosTilt - pt.z * sinTilt
           const Z = pt.y * sinTilt + pt.z * cosTilt
           const normZ = Math.max(0, Math.min(1, (Z + 1) / 2))
-          const depthCurve = Math.pow(normZ, 1.4)
-          const D = 900
+          const depthCurve = Math.pow(normZ, dims.curveExponent)
+          const D = dims.cameraDistance
           const persp = D / (D - Z * dims.radius)
           const initX = X * dims.radius * persp
           const initY = Y * dims.radius * persp
@@ -584,7 +598,7 @@ export default function Experience() {
                     className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-[400] whitespace-nowrap"
                   >
                     <div className="flex flex-col items-center">
-                      <div className="rounded-full border border-white/20 bg-zinc-950/95 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl">
+                      <div className="rounded-full border border-white/20 bg-zinc-950/95 px-2.5 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md shadow-xl max-w-[85vw] truncate">
                         <span className="font-semibold text-white">
                           {item.name}
                         </span>
@@ -597,7 +611,8 @@ export default function Experience() {
             </div>
           )
         })}
-      </motion.div>
+        </motion.div>
+      </div>
 
       {/* Global LinkedIn Certificates Action Link */}
       <motion.div
