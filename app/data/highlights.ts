@@ -29,7 +29,6 @@ const highlightImagePaths: string[] = [
   '/higlight/After effects Editing.webp',
   '/higlight/Appriciation for Developing Website for College.webp',
   '/higlight/Bcom Friends.webp',
-  '/higlight/Bcom Outstanding Student.webp',
   '/higlight/Chess Competition.webp',
   '/higlight/Conducting Workshop on Github.webp',
   '/higlight/Conducting Workshop on Github_.webp',
@@ -44,6 +43,8 @@ const highlightImagePaths: string[] = [
   '/higlight/Graduation.webp',
   '/higlight/Graduation_.webp',
   '/higlight/MCA 3rd Rank.webp',
+  '/higlight/With Riya Shibu.webp',
+  '/higlight/Bcom Outstanding Student.webp',
   '/higlight/MCA Best Class Award.webp',
   '/higlight/MCA Best Class.webp',
   '/higlight/MCA Friends.webp',
@@ -63,9 +64,10 @@ const highlightImagePaths: string[] = [
   '/higlight/Went to take Promotion Video For DC College.webp',
   '/higlight/With Baby Jean.webp',
   '/higlight/With Gokul Bijuraj.webp',
-  '/higlight/With Riya Shibu.webp',
+  
   '/higlight/Workshop on Github.webp',
   '/higlight/friends MCA.webp',
+  
 ]
 
 export const highlights: Highlight[] = highlightImagePaths.map((imagePath, index) => {
