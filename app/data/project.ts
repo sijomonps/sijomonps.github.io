@@ -15,7 +15,7 @@ export const projects: Project[] = [
     id: 'marian-research',
     number: '01',
     title: 'MarianResearch',
-    category: 'WEB APPLICATION',
+    category: 'FOR A COLLEGE',
     description:
       'Full-stack institutional research management platform streamlining paper submission, review, approval, and administration for 100+ faculty and scholars.',
     technologies: ['Next.js', 'Node.js', 'Express.js', 'MongoDB', 'Docker'],
@@ -23,8 +23,19 @@ export const projects: Project[] = [
     liveUrl: 'https://research.mariancollege.org/',
   },
   {
-    id: 'zelenz',
+    id: 'gsrt-kerala',
     number: '02',
+    title: 'GSRT Kerala',
+    category: 'FREELANCE',
+    description:
+      'A freelance website developed for a non-profit organization.',
+    technologies: ['Next.js', 'Tailwind CSS'],
+    image: '/projects/gsrt-kerala.webp',
+    liveUrl: 'https://www.gsrtckerala.org/',
+  },
+  {
+    id: 'zelenz',
+    number: '03',
     title: 'ZELENZ',
     category: 'FREELANCE',
     description:
@@ -35,7 +46,7 @@ export const projects: Project[] = [
   },
   {
     id: 'chezmoi',
-    number: '03',
+    number: '04',
     title: 'CHEZ MOI',
     category: 'FREELANCE',
     description:
@@ -46,7 +57,7 @@ export const projects: Project[] = [
   },
   {
     id: 'mark-gpt',
-    number: '04',
+    number: '05',
     title: 'MARKGPT',
     category: 'CHROME EXTENSION',
     description:
@@ -58,7 +69,7 @@ export const projects: Project[] = [
   },
   {
     id: 'hp-crafts',
-    number: '05',
+    number: '06',
     title: 'HP CRAFTS',
     category: 'FREELANCE',
     description:
@@ -70,7 +81,7 @@ export const projects: Project[] = [
   },
   {
     id: 'tedx-kcmt',
-    number: '06',
+    number: '07',
     title: 'TEDxKCMT',
     category: 'EVENT WEBSITE',
     description:
@@ -81,8 +92,20 @@ export const projects: Project[] = [
     githubUrl: 'https://github.com/sijomonps/Tedxkcmt',
   },
   {
+    id: 'havens',
+    number: '08',
+    title: 'Havens',
+    category: 'FREELANCE',
+    description:
+      'Simple business website developed as freelance work for a small business.',
+    technologies: ['Next.js', 'Tailwind CSS'],
+    image: '/projects/havens.webp',
+    liveUrl: 'https://havenscom.vercel.app/',
+    githubUrl: 'https://github.com/sijomonps/Havens',
+  },
+  {
     id: 'farewell-seniors',
-    number: '07',
+    number: '09',
     title: 'FAREWELL',
     category: 'WEB APPLICATION',
     description:
@@ -94,7 +117,7 @@ export const projects: Project[] = [
   },
   {
     id: 'flappy-aljo',
-    number: '08',
+    number: '10',
     title: 'FLAPPY ALJO',
     category: 'WEB GAME',
     description:

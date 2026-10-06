@@ -1,13 +1,77 @@
 'use client'
 
+import { useRef, useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
-import { FiArrowUpRight } from 'react-icons/fi'
+import { FiArrowUpRight, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { projects } from '../../data/project'
 
 export default function Projects() {
   const shouldReduceMotion = useReducedMotion()
   const isReducedMotion = !!shouldReduceMotion
+
+  const railRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+
+  // Detect whether there is scrollable content in either direction
+  const updateScrollButtons = useCallback(() => {
+    const el = railRef.current
+    if (!el) return
+    const atStart = el.scrollLeft <= 3
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 3
+
+    setCanScrollLeft(!atStart)
+    setCanScrollRight(!atEnd)
+  }, [])
+
+  useEffect(() => {
+    const el = railRef.current
+    if (!el) return
+
+    updateScrollButtons()
+
+    el.addEventListener('scroll', updateScrollButtons, { passive: true })
+    window.addEventListener('resize', updateScrollButtons)
+
+    const timer = setTimeout(updateScrollButtons, 500)
+
+    return () => {
+      el.removeEventListener('scroll', updateScrollButtons)
+      window.removeEventListener('resize', updateScrollButtons)
+      clearTimeout(timer)
+    }
+  }, [updateScrollButtons])
+
+  // Responsive scroll step: exactly cardWidth + gap measured from actual DOM articles
+  const getScrollAmount = useCallback(() => {
+    const el = railRef.current
+    if (!el) return 400
+
+    const articles = el.querySelectorAll<HTMLElement>('article')
+    if (articles.length >= 2) {
+      const delta = articles[1].offsetLeft - articles[0].offsetLeft
+      if (delta > 0) return delta
+    } else if (articles.length === 1) {
+      return articles[0].offsetWidth + 24
+    }
+
+    return el.clientWidth > 640 ? 440 : 340
+  }, [])
+
+  const scrollLeft = useCallback(() => {
+    const el = railRef.current
+    if (!el) return
+    const amount = getScrollAmount()
+    el.scrollBy({ left: -amount, behavior: 'smooth' })
+  }, [getScrollAmount])
+
+  const scrollRight = useCallback(() => {
+    const el = railRef.current
+    if (!el) return
+    const amount = getScrollAmount()
+    el.scrollBy({ left: amount, behavior: 'smooth' })
+  }, [getScrollAmount])
 
   // Variants for the overall WORKS section container (replays every time section enters viewport)
   const headerVariants: Variants = {
@@ -55,6 +119,23 @@ export default function Projects() {
       transition: {
         duration: isReducedMotion ? 0 : 0.5,
         delay: isReducedMotion ? 0 : 0.18,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
+
+  // Navigation controls entrance
+  const controlsVariants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: isReducedMotion ? 0 : 12,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: isReducedMotion ? 0 : 0.45,
+        delay: isReducedMotion ? 0 : 0.22,
         ease: [0.22, 1, 0.36, 1],
       },
     },
@@ -173,9 +254,62 @@ export default function Projects() {
         </div>
       </motion.div>
 
+      {/* Rail Navigation Controls */}
+      <motion.div
+        variants={controlsVariants}
+        className="max-w-7xl mx-auto px-6 sm:px-10 md:px-12 mt-8 sm:mt-12 flex items-center justify-between"
+      >
+        {/* Scroll Left / Previous Project Button */}
+        <button
+          type="button"
+          onClick={scrollLeft}
+          disabled={!canScrollLeft}
+          aria-label="Previous project"
+          className={`
+            group relative flex items-center justify-center
+            w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12
+            rounded-xl sm:rounded-2xl
+            border backdrop-blur-md shadow-md
+            transition-all duration-200 ease-out
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40
+            ${canScrollLeft
+              ? 'border-white/10 bg-zinc-900/60 text-white/80 hover:text-white hover:border-white/25 hover:bg-zinc-800/80 hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0 active:scale-95 shadow-black/40 hover:shadow-lg hover:shadow-black/60 cursor-pointer'
+              : 'border-white/[0.04] bg-zinc-900/20 text-white/25 opacity-35 cursor-not-allowed shadow-none'
+            }
+            motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:transition-none
+          `}
+        >
+          <FiChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-hover:-translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
+        </button>
+
+        {/* Scroll Right / Next Project Button */}
+        <button
+          type="button"
+          onClick={scrollRight}
+          disabled={!canScrollRight}
+          aria-label="Next project"
+          className={`
+            group relative flex items-center justify-center
+            w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12
+            rounded-xl sm:rounded-2xl
+            border backdrop-blur-md shadow-md
+            transition-all duration-200 ease-out
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40
+            ${canScrollRight
+              ? 'border-white/10 bg-zinc-900/60 text-white/80 hover:text-white hover:border-white/25 hover:bg-zinc-800/80 hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0 active:scale-95 shadow-black/40 hover:shadow-lg hover:shadow-black/60 cursor-pointer'
+              : 'border-white/[0.04] bg-zinc-900/20 text-white/25 opacity-35 cursor-not-allowed shadow-none'
+            }
+            motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:transition-none
+          `}
+        >
+          <FiChevronRight className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
+        </button>
+      </motion.div>
+
       {/* Horizontal Project Rail Container (Single Row, Native Horizontal Scroll, No Horizontal Animation) */}
-      <div className="mt-10 sm:mt-14 w-full">
+      <div className="mt-4 sm:mt-5 w-full">
         <motion.div
+          ref={railRef}
           variants={railVariants}
           tabIndex={0}
           aria-label="Horizontal list of projects"

@@ -13,7 +13,7 @@ export type Recommendation = {
 
 export const recommendations: Recommendation[] = [
   {
-    id: 'rec-01',
+    id: 'jobi-babu',
     name: 'Jobi Babu',
     initials: 'JB',
     role: 'Assistant Professor',
@@ -28,7 +28,7 @@ export const recommendations: Recommendation[] = [
     avatar: '/recommendations/jobi-babu.webp',
   },
   {
-    id: 'rec-02',
+    id: 'kochumol-abraham',
     name: 'Kochumol Abraham',
     initials: 'KA',
     role: 'Assistant Professor',
@@ -41,5 +41,20 @@ export const recommendations: Recommendation[] = [
     fullText:
       'I am pleased to recommend Sijomon, my student who has consistently demonstrated a positive attitude, sincerity, and a strong sense of responsibility. He has shown commendable initiative and leadership in academic and co-curricular activities. In particular, his involvement in organizing the “Idea to Patent” programme under the IPR Cell and the PG Department of Computer Applications reflects his ability to take responsibility, coordinate effectively, and work with commitment towards achieving a common objective. His enthusiasm, organizational skills, and willingness to take initiative are noteworthy. I am confident that Sijomon will continue to demonstrate these qualities and excel in his future academic and professional endeavours.',
     avatar: '/recommendations/kochumol-abraham.webp',
+  },
+  {
+    id: 'varsha-s-chandran',
+    name: 'Varsha S Chandran',
+    initials: 'VC',
+    role: 'BSc Psychology Graduate | Aspiring Psychologist | Co Organizer of TEDxKCMT | Fashion Enthusiast',
+    institution: 'Varsha S managed Sijomon directly',
+    date: 'October 4, 2026',
+    recommendation:
+      'As a Co-Organizer of TEDxKCMT, I had the opportunity to work closely with Sijomon P. S. as part of our Technical Team. He took the initiative to build our event website and played an active role in creating Instagram Reels, helping our page reach millions of views.\n\nSijomon is responsible, quick to learn, and genuinely passionate about technology. He works exceptionally well under pressure, takes ownership of his work, and is a great team player. I’m happy to recommend him for opportunities in tech and web development and am confident he would be a valuable addition to any team.',
+    previewText:
+      'As a Co-Organizer of TEDxKCMT, I had the opportunity to work closely with Sijomon P. S. as part of our Technical Team. He took the initiative to build our event website and played an active role in creating Instagram Reels, helping our page reach millions of views.',
+    fullText:
+      'As a Co-Organizer of TEDxKCMT, I had the opportunity to work closely with Sijomon P. S. as part of our Technical Team. He took the initiative to build our event website and played an active role in creating Instagram Reels, helping our page reach millions of views.\n\nSijomon is responsible, quick to learn, and genuinely passionate about technology. He works exceptionally well under pressure, takes ownership of his work, and is a great team player. I’m happy to recommend him for opportunities in tech and web development and am confident he would be a valuable addition to any team.',
+    avatar: '/recommendations/varsha-s-chandran.webp',
   },
 ]

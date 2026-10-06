@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion'
-import { FiLinkedin, FiChevronRight, FiChevronUp } from 'react-icons/fi'
+import { FiLinkedin, FiChevronLeft, FiChevronRight, FiChevronUp } from 'react-icons/fi'
 import { FaQuoteLeft } from 'react-icons/fa'
 import { recommendations, type Recommendation } from '../../data/recommendations'
 
@@ -66,10 +66,12 @@ function RecommendationCard({
   item,
   isExpanded,
   onToggle,
+  isFocused = false,
 }: {
   item: Recommendation
   isExpanded: boolean
   onToggle: () => void
+  isFocused?: boolean
 }) {
   return (
     <article
@@ -78,8 +80,10 @@ function RecommendationCard({
         rounded-2xl md:rounded-3xl
         border transition-all duration-300
         ${isExpanded
-          ? 'border-white/15 bg-zinc-900/80'
-          : 'border-white/[0.07] bg-zinc-900/50 hover:border-white/15 hover:bg-zinc-900/70'
+          ? 'border-white/20 bg-zinc-900/85 shadow-2xl shadow-black/50'
+          : isFocused
+            ? 'border-white/20 bg-zinc-900/70 shadow-xl shadow-black/40 ring-1 ring-white/10'
+            : 'border-white/[0.07] bg-zinc-900/50 hover:border-white/15 hover:bg-zinc-900/70'
         }
         p-5 sm:p-6 md:p-7
         shadow-lg shadow-black/30
@@ -234,9 +238,14 @@ export default function Recommendations() {
    */
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({})
 
-  // Mobile carousel index (0 or 1)
-  const [mobileIndex, setMobileIndex] = useState(0)
+  // Active recommendation index (0, 1, or 2)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [direction, setDirection] = useState<1 | -1>(1)
+  const [timerResetKey, setTimerResetKey] = useState(0)
   const [isTouched, setIsTouched] = useState(false)
+
+  const desktopRailRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const isAnyExpanded = useMemo(
     () => Object.values(expandedCards).some(Boolean),
@@ -246,6 +255,46 @@ export default function Recommendations() {
   const toggleExpand = useCallback((id: string) => {
     setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }))
   }, [])
+
+  const handlePrev = useCallback(() => {
+    setDirection(-1)
+    setActiveIndex((prev) => (prev - 1 + recommendations.length) % recommendations.length)
+    setTimerResetKey((prev) => prev + 1)
+  }, [])
+
+  const handleNext = useCallback(() => {
+    setDirection(1)
+    setActiveIndex((prev) => (prev + 1) % recommendations.length)
+    setTimerResetKey((prev) => prev + 1)
+  }, [])
+
+  const handleSelectIndex = useCallback((index: number) => {
+    setDirection(index >= activeIndex ? 1 : -1)
+    setActiveIndex(index)
+    setTimerResetKey((prev) => prev + 1)
+  }, [activeIndex])
+
+  // Sync desktop rail horizontal scroll position with active card
+  useEffect(() => {
+    const cardEl = cardRefs.current[activeIndex]
+    const railEl = desktopRailRef.current
+    if (!cardEl || !railEl) return
+
+    const railRect = railEl.getBoundingClientRect()
+    const cardRect = cardEl.getBoundingClientRect()
+
+    let targetScrollLeft = 0
+    if (activeIndex === 0) {
+      targetScrollLeft = 0
+    } else if (activeIndex === recommendations.length - 1) {
+      targetScrollLeft = railEl.scrollWidth - railEl.clientWidth
+    } else {
+      const cardOffset = cardRect.left - railRect.left + railEl.scrollLeft
+      targetScrollLeft = Math.max(0, cardOffset - (railRect.width - cardRect.width) / 2)
+    }
+
+    railEl.scrollTo({ left: targetScrollLeft, behavior: 'smooth' })
+  }, [activeIndex])
 
   // ── Header animation ──
   const headingVariants: Variants = {
@@ -285,16 +334,17 @@ export default function Recommendations() {
     },
   }
 
-  // ── Mobile auto-scroll: pauses when any card is expanded or touched ──
+  // ── Auto-scroll: pauses when any card is expanded or touched; resets on manual button click ──
   useEffect(() => {
     if (isReducedMotion || isAnyExpanded || isTouched) return
 
     const timer = setInterval(() => {
-      setMobileIndex((prev) => (prev === 0 ? 1 : 0))
+      setDirection(1)
+      setActiveIndex((prev) => (prev + 1) % recommendations.length)
     }, 5000)
 
     return () => clearInterval(timer)
-  }, [isReducedMotion, isAnyExpanded, isTouched])
+  }, [isReducedMotion, isAnyExpanded, isTouched, timerResetKey])
 
   return (
     <div className="relative z-10 w-full mt-16 sm:mt-24 select-none">
@@ -322,19 +372,39 @@ export default function Recommendations() {
         </motion.p>
       </motion.div>
 
-      {/* ── DESKTOP (md+): Two-column, items-start so expanded card grows alone ── */}
-      <div className="hidden md:grid md:grid-cols-2 items-start gap-6 lg:gap-8 max-w-5xl mx-auto px-6">
-        {recommendations.map((item) => (
-          <RecommendationCard
-            key={item.id}
-            item={item}
-            isExpanded={!!expandedCards[item.id]}
-            onToggle={() => toggleExpand(item.id)}
-          />
-        ))}
+      {/* ── DESKTOP (md+): Premium Horizontal Carousel Rail (Preserves identical card dimensions) ── */}
+      <div className="hidden md:block w-full max-w-6xl mx-auto px-6 relative">
+        <div
+          ref={desktopRailRef}
+          className="
+            works-scrollbar-hidden
+            w-full overflow-x-auto overflow-y-hidden
+            flex flex-nowrap gap-6 lg:gap-8
+            pb-4 pt-1 items-start
+            scroll-smooth
+          "
+        >
+          {recommendations.map((item, index) => (
+            <div
+              key={item.id}
+              ref={(el) => {
+                cardRefs.current[index] = el
+              }}
+              onClick={() => handleSelectIndex(index)}
+              className="w-[calc(50%-14px)] min-w-[380px] max-w-[500px] shrink-0"
+            >
+              <RecommendationCard
+                item={item}
+                isExpanded={!!expandedCards[item.id]}
+                isFocused={activeIndex === index}
+                onToggle={() => toggleExpand(item.id)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* ── MOBILE (<md): Single card visible + auto-scroll ── */}
+      {/* ── MOBILE (<md): Single card visible + directional auto-scroll ── */}
       <div
         className="md:hidden relative w-full overflow-hidden px-4 sm:px-6"
         onTouchStart={() => setIsTouched(true)}
@@ -342,10 +412,10 @@ export default function Recommendations() {
       >
         <AnimatePresence initial={false} mode="wait">
           <motion.div
-            key={recommendations[mobileIndex].id}
-            initial={isReducedMotion ? false : { opacity: 0, x: 40 }}
+            key={recommendations[activeIndex].id}
+            initial={isReducedMotion ? false : { opacity: 0, x: direction * 40 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={isReducedMotion ? undefined : { opacity: 0, x: -40 }}
+            exit={isReducedMotion ? undefined : { opacity: 0, x: direction * -40 }}
             transition={{
               x: { type: 'spring', stiffness: 260, damping: 28 },
               opacity: { duration: 0.25 },
@@ -353,31 +423,82 @@ export default function Recommendations() {
             className="w-full max-w-[420px] mx-auto"
           >
             <RecommendationCard
-              item={recommendations[mobileIndex]}
-              isExpanded={!!expandedCards[recommendations[mobileIndex].id]}
-              onToggle={() => toggleExpand(recommendations[mobileIndex].id)}
+              item={recommendations[activeIndex]}
+              isExpanded={!!expandedCards[recommendations[activeIndex].id]}
+              onToggle={() => toggleExpand(recommendations[activeIndex].id)}
             />
           </motion.div>
         </AnimatePresence>
+      </div>
 
-        {/* Dot indicators */}
-        <div className="flex items-center justify-center gap-2 mt-5" aria-hidden="true">
+      {/* ── Carousel Navigation Controls (Shared across Desktop & Mobile) ── */}
+      <div className="flex items-center justify-center gap-3.5 sm:gap-4 mt-8 sm:mt-10">
+        {/* Previous Recommendation Button */}
+        <button
+          type="button"
+          onClick={handlePrev}
+          aria-label="Previous recommendation"
+          className="
+            group relative flex items-center justify-center
+            w-9 h-9 sm:w-10 sm:h-10
+            rounded-xl
+            border border-white/10 bg-zinc-900/60
+            text-white/80 hover:text-white
+            hover:border-white/25 hover:bg-zinc-800/80
+            backdrop-blur-md shadow-md shadow-black/40 hover:shadow-lg hover:shadow-black/60
+            transition-all duration-200 ease-out
+            hover:-translate-y-0.5 hover:scale-[1.03]
+            active:translate-y-0 active:scale-95
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40
+            cursor-pointer
+            motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:transition-none
+          "
+        >
+          <FiChevronLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
+        </button>
+
+        {/* Active Indicators (Dot pills) */}
+        <div className="flex items-center gap-2 px-1" aria-hidden="true">
           {recommendations.map((item, i) => (
             <button
               key={item.id}
               type="button"
-              onClick={() => setMobileIndex(i)}
+              onClick={() => handleSelectIndex(i)}
               className={`
-                h-1.5 rounded-full transition-all duration-300
-                ${i === mobileIndex
-                  ? 'bg-white/60 w-4'
-                  : 'bg-white/20 w-1.5 hover:bg-white/30'
+                h-1.5 rounded-full transition-all duration-300 cursor-pointer
+                ${i === activeIndex
+                  ? 'bg-white/75 w-5'
+                  : 'bg-white/20 w-1.5 hover:bg-white/40'
                 }
               `}
               aria-label={`View recommendation from ${item.name}`}
             />
           ))}
         </div>
+
+        {/* Next Recommendation Button */}
+        <button
+          type="button"
+          onClick={handleNext}
+          aria-label="Next recommendation"
+          className="
+            group relative flex items-center justify-center
+            w-9 h-9 sm:w-10 sm:h-10
+            rounded-xl
+            border border-white/10 bg-zinc-900/60
+            text-white/80 hover:text-white
+            hover:border-white/25 hover:bg-zinc-800/80
+            backdrop-blur-md shadow-md shadow-black/40 hover:shadow-lg hover:shadow-black/60
+            transition-all duration-200 ease-out
+            hover:-translate-y-0.5 hover:scale-[1.03]
+            active:translate-y-0 active:scale-95
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40
+            cursor-pointer
+            motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:transition-none
+          "
+        >
+          <FiChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
+        </button>
       </div>
     </div>
   )

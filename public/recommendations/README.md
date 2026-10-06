@@ -4,6 +4,7 @@ Optimized profile photos for the recommendations:
 
 - `jobi-babu.webp` — Jobi Babu (Assistant Professor, Marian College)
 - `kochumol-abraham.webp` — Kochumol Abraham (Assistant Professor, Marian College)
+- `varsha-s-chandran.webp` — Varsha S Chandran (TEDxKCMT Co-Organizer)
 
 ### Specs:
 - Format: WebP (1:1 square aspect ratio)
