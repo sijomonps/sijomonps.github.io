@@ -4,4 +4,5 @@ export interface TodoItem {
   text: string;
   is_completed: boolean;
   created_at: string;
+  sort_order?: number;
 }
