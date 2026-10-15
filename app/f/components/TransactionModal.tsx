@@ -1,0 +1,244 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { FiX, FiCheck, FiAlertCircle } from 'react-icons/fi';
+import { supabase } from '@/lib/supabaseClient';
+import { TransactionType, Transaction } from '@/lib/financeTypes';
+import { getTodayLocalDateString } from '@/lib/financeUtils';
+
+interface TransactionModalProps {
+  isOpen: boolean;
+  type: TransactionType;
+  onClose: () => void;
+  onSuccess: (newTransaction: Transaction) => void;
+}
+
+export default function TransactionModal({
+  isOpen,
+  type,
+  onClose,
+  onSuccess,
+}: TransactionModalProps) {
+  const [title, setTitle] = useState('');
+  const [amount, setAmount] = useState('');
+  const [date, setDate] = useState(getTodayLocalDateString());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setTitle('');
+      setAmount('');
+      setDate(getTodayLocalDateString());
+      setErrorMessage(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen, type]);
+
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const isIncome = type === 'income';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setErrorMessage('Title is required.');
+      return;
+    }
+
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      setErrorMessage('Amount must be a positive number greater than 0.');
+      return;
+    }
+
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      setErrorMessage('Please select a valid date.');
+      return;
+    }
+
+    if (!supabase) {
+      setErrorMessage('Database client is not available.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          type,
+          title: trimmedTitle,
+          amount: numericAmount,
+          transaction_date: date,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        setErrorMessage(error.message || 'Failed to save transaction.');
+      } else if (data) {
+        onSuccess(data as Transaction);
+        onClose();
+      }
+    } catch {
+      setErrorMessage('An unexpected error occurred while saving.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150"
+    >
+      {/* Click outside backdrop */}
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
+
+      {/* Modal Dialog Card */}
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900/95 p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <span
+              className={`inline-block h-3 w-3 rounded-full ${
+                isIncome ? 'bg-emerald-400' : 'bg-rose-400'
+              }`}
+            />
+            <h2 id="modal-title" className="text-lg font-semibold tracking-wide text-foreground">
+              Add {isIncome ? 'Income' : 'Expense'}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 text-zinc-400 hover:text-foreground rounded-lg hover:bg-white/5 transition"
+            aria-label="Close dialog"
+          >
+            <FiX className="h-5 w-5" />
+          </button>
+        </div>
+
+        {errorMessage && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 mb-4">
+            <FiAlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-400" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Field 1: Title */}
+          <div>
+            <label
+              htmlFor="transaction-title"
+              className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5"
+            >
+              Title
+            </label>
+            <input
+              id="transaction-title"
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={isIncome ? 'e.g. Freelance Client Payment' : 'e.g. Cloud Server Hosting'}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-foreground placeholder-zinc-600 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+              autoFocus
+            />
+          </div>
+
+          {/* Field 2: Amount */}
+          <div>
+            <label
+              htmlFor="transaction-amount"
+              className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5"
+            >
+              Amount (₹)
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-500 font-medium">
+                ₹
+              </span>
+              <input
+                id="transaction-amount"
+                type="number"
+                step="0.01"
+                min="0.01"
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-8 pr-3.5 py-2.5 text-sm text-foreground placeholder-zinc-600 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+              />
+            </div>
+          </div>
+
+          {/* Field 3: Date */}
+          <div>
+            <label
+              htmlFor="transaction-date"
+              className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5"
+            >
+              Date
+            </label>
+            <input
+              id="transaction-date"
+              type="date"
+              required
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-foreground focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition [color-scheme:dark]"
+            />
+          </div>
+
+          {/* Submit Actions */}
+          <div className="pt-2 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-zinc-300 hover:bg-white/10 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-semibold shadow-md transition disabled:opacity-50 ${
+                isIncome
+                  ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400'
+                  : 'bg-rose-500 text-white hover:bg-rose-400'
+              }`}
+            >
+              {isSubmitting ? (
+                'Saving...'
+              ) : (
+                <>
+                  <FiCheck className="h-3.5 w-3.5" /> Save {isIncome ? 'Income' : 'Expense'}
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
