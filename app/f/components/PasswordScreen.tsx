@@ -51,18 +51,18 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
   // If Supabase environment variables are missing, render a friendly setup message
   if (!isSupabaseConfigured || !financeLoginEmail) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-12 relative z-10">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900/80 p-8 backdrop-blur-xl shadow-2xl">
-          <div className="flex items-center gap-3 text-amber-400 mb-4">
-            <FiAlertTriangle className="h-6 w-6 shrink-0" />
-            <h2 className="text-lg font-semibold tracking-wide text-foreground">
+      <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12 relative z-10">
+        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
+          <div className="flex items-center gap-2.5 text-amber-400 mb-3.5">
+            <FiAlertTriangle className="h-5 w-5 shrink-0" />
+            <h2 className="text-base sm:text-lg font-semibold tracking-wide text-foreground">
               Configuration Required
             </h2>
           </div>
-          <p className="text-sm text-zinc-400 leading-relaxed mb-6">
+          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-5">
             The Personal Finance module requires Supabase environment variables before authentication can be enabled.
           </p>
-          <div className="rounded-lg bg-black/40 border border-white/5 p-4 text-xs font-mono space-y-2 text-zinc-300">
+          <div className="rounded-xl bg-black/40 border border-white/5 p-3.5 text-xs font-mono space-y-2 text-zinc-300">
             <div>
               <span className="text-zinc-500">NEXT_PUBLIC_SUPABASE_URL</span>
               <div className="text-amber-300/80">
@@ -82,10 +82,10 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
               </div>
             </div>
           </div>
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-5 flex flex-col gap-3">
             <Link
               href="/"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-white/10 transition"
+              className="min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs sm:text-sm font-medium text-foreground hover:bg-white/10 transition"
             >
               <FiArrowLeft className="h-4 w-4" /> Return to Portfolio
             </Link>
@@ -96,26 +96,26 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative z-10">
+    <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12 relative z-10">
       <div className="w-full max-w-md">
         {/* Header Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-zinc-900/90 text-foreground shadow-lg mb-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl border border-white/10 bg-zinc-900/90 text-foreground shadow-lg mb-3">
             <FiLock className="h-5 w-5 text-emerald-400" />
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl tracking-wider uppercase font-bold text-foreground">
+          <h1 className="font-display text-3xl sm:text-5xl tracking-wider uppercase font-bold text-foreground">
             FINANCE
           </h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-zinc-400">
             Enter master password to access your dashboard
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {errorMessage && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-300">
+              <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
                 <FiAlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-rose-400" />
                 <span className="leading-snug">{errorMessage}</span>
               </div>
@@ -139,14 +139,14 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
                   autoComplete="current-password"
                   autoFocus
                   disabled={isLoading}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 pr-12 text-sm text-foreground placeholder-zinc-600 focus:border-emerald-500/60 focus:outline-none focus:ring-1 focus:ring-emerald-500/60 disabled:opacity-50 transition"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-3 pr-12 text-base sm:text-sm text-foreground placeholder-zinc-600 focus:border-emerald-500/60 focus:outline-none focus:ring-1 focus:ring-emerald-500/60 disabled:opacity-50 transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-foreground transition rounded-lg"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-zinc-400 hover:text-foreground transition rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center"
                 >
                   {showPassword ? (
                     <FiEyeOff className="h-4 w-4" />
@@ -160,7 +160,7 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             <button
               type="submit"
               disabled={isLoading || !password}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-foreground/20 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md"
+              className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-xs sm:text-sm font-semibold text-background hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-foreground/20 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md"
             >
               {isLoading ? (
                 <>
@@ -192,7 +192,7 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between text-xs text-zinc-500">
+          <div className="mt-5 pt-4 sm:pt-5 border-t border-white/5 flex items-center justify-between text-xs text-zinc-500">
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 hover:text-zinc-300 transition"

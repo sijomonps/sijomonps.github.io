@@ -109,21 +109,21 @@ export default function TransactionModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150"
     >
       {/* Click outside backdrop */}
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
       {/* Modal Dialog Card */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900/95 p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900/95 p-4 sm:p-7 shadow-2xl backdrop-blur-xl">
+        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-white/10">
+          <div className="flex items-center gap-2">
             <span
-              className={`inline-block h-3 w-3 rounded-full ${
+              className={`inline-block h-2.5 w-2.5 rounded-full ${
                 isIncome ? 'bg-emerald-400' : 'bg-rose-400'
               }`}
             />
-            <h2 id="modal-title" className="text-lg font-semibold tracking-wide text-foreground">
+            <h2 id="modal-title" className="text-base sm:text-lg font-semibold tracking-wide text-foreground">
               Add {isIncome ? 'Income' : 'Expense'}
             </h2>
           </div>
@@ -138,13 +138,13 @@ export default function TransactionModal({
         </div>
 
         {errorMessage && (
-          <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 mb-4">
+          <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 mb-3.5">
             <FiAlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-400" />
-            <span>{errorMessage}</span>
+            <span className="leading-snug">{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
           {/* Field 1: Title */}
           <div>
             <label
@@ -159,8 +159,8 @@ export default function TransactionModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={isIncome ? 'e.g. Freelance Client Payment' : 'e.g. Cloud Server Hosting'}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-foreground placeholder-zinc-600 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+              placeholder={isIncome ? 'e.g. Freelance Client Payment' : 'e.g. Server Hosting'}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 sm:py-2.5 text-base sm:text-sm text-foreground placeholder-zinc-600 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
               autoFocus
             />
           </div>
@@ -186,7 +186,7 @@ export default function TransactionModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full rounded-xl border border-white/10 bg-black/40 pl-8 pr-3.5 py-2.5 text-sm text-foreground placeholder-zinc-600 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-8 pr-3.5 py-2.5 text-base sm:text-sm text-foreground placeholder-zinc-600 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
               />
             </div>
           </div>
@@ -205,24 +205,24 @@ export default function TransactionModal({
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-foreground focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition [color-scheme:dark]"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-base sm:text-sm text-foreground focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition [color-scheme:dark]"
             />
           </div>
 
-          {/* Submit Actions */}
-          <div className="pt-2 flex items-center justify-end gap-3">
+          {/* Submit Actions: Touch-friendly */}
+          <div className="pt-2 flex items-center justify-end gap-2.5 sm:gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-zinc-300 hover:bg-white/10 transition"
+              className="min-h-[44px] rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-medium text-zinc-300 hover:bg-white/10 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-semibold shadow-md transition disabled:opacity-50 ${
+              className={`min-h-[44px] inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-semibold shadow-md transition disabled:opacity-50 ${
                 isIncome
                   ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400'
                   : 'bg-rose-500 text-white hover:bg-rose-400'
@@ -232,7 +232,7 @@ export default function TransactionModal({
                 'Saving...'
               ) : (
                 <>
-                  <FiCheck className="h-3.5 w-3.5" /> Save {isIncome ? 'Income' : 'Expense'}
+                  <FiCheck className="h-4 w-4" /> Save {isIncome ? 'Income' : 'Expense'}
                 </>
               )}
             </button>

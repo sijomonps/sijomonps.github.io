@@ -25,3 +25,21 @@ export interface FinanceMetrics {
   totalEarned: number;
   allTimeExpenses: number;
 }
+
+export type ChartRange = '6M' | '1Y' | 'ALL';
+
+export interface CandleData {
+  monthKey: string; // 'YYYY-MM'
+  monthLabel: string; // 'Oct 2026'
+  shortLabel: string; // 'Oct' or 'Oct 25'
+  open: number;
+  close: number;
+  high: number;
+  low: number;
+  change: number; // close - open
+  changePercent: number;
+  isBullish: boolean;
+  isBearish: boolean;
+  isNeutral: boolean;
+  transactionCount: number;
+}
