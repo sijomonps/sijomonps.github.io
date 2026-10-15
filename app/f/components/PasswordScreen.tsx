@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiArrowLeft, FiAlertTriangle } from 'react-icons/fi';
+import { FiLock, FiArrowRight, FiArrowLeft, FiAlertTriangle } from 'react-icons/fi';
 import { supabase, financeLoginEmail, isSupabaseConfigured } from '@/lib/supabaseClient';
 
 interface PasswordScreenProps {
@@ -12,7 +12,6 @@ interface PasswordScreenProps {
 export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
   const [email, setEmail] = useState(financeLoginEmail || '');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -82,18 +81,18 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative z-10">
       <div className="w-full max-w-sm space-y-6">
-        {/* Calm, Minimal Header */}
+        {/* Clean, Simple Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-zinc-900/50 text-zinc-300 mb-1">
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-zinc-900/50 text-zinc-400 mb-1">
             <FiLock className="h-4 w-4" />
           </div>
-          <h1 className="text-base sm:text-lg font-medium tracking-tight text-foreground">
-            Personal Area Authentication
+          <h1 className="text-lg sm:text-xl font-medium tracking-tight text-foreground">
+            Personal Area
           </h1>
         </div>
 
         {/* Minimal Login Card */}
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-5 sm:p-6 shadow-xl backdrop-blur-md">
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-5 sm:p-6 shadow-xl backdrop-blur-md">
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Email Field only if not configured via environment */}
             {needsEmailInput && (
@@ -106,53 +105,38 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
                   autoComplete="email"
                   required
                   disabled={isLoading}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-foreground placeholder-zinc-500 focus:border-white/30 focus:outline-none transition"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-foreground placeholder-zinc-500 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400/30 transition"
                 />
               </div>
             )}
 
-            {/* Password input with toggle and small submit arrow */}
+            {/* Masked Password input with submit arrow */}
             <div className="relative flex items-center">
               <input
                 id="personal-area-password"
                 name="password"
-                type={showPassword ? 'text' : 'password'}
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 autoComplete="current-password"
                 autoFocus
                 disabled={isLoading}
-                className="w-full rounded-xl border border-white/10 bg-black/40 pl-3.5 pr-20 py-2.5 text-sm text-foreground placeholder-zinc-500 focus:border-white/30 focus:outline-none transition"
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-3.5 pr-11 py-2.5 text-sm text-foreground placeholder-zinc-500 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400/30 transition"
               />
-              <div className="absolute right-1.5 flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  tabIndex={-1}
-                  className="p-1.5 text-zinc-500 hover:text-zinc-300 transition rounded-lg"
-                >
-                  {showPassword ? (
-                    <FiEyeOff className="h-3.5 w-3.5" />
-                  ) : (
-                    <FiEye className="h-3.5 w-3.5" />
-                  )}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading || !password}
-                  aria-label="Submit password"
-                  title="Submit"
-                  className="h-7 w-7 rounded-lg bg-foreground text-background hover:bg-zinc-200 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
-                >
-                  {isLoading ? (
-                    <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                  ) : (
-                    <FiArrowRight className="h-3.5 w-3.5" />
-                  )}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={isLoading || !password}
+                aria-label="Unlock"
+                title="Unlock"
+                className="absolute right-1.5 h-7 w-7 rounded-lg bg-foreground text-background hover:bg-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
+              >
+                {isLoading ? (
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                ) : (
+                  <FiArrowRight className="h-3.5 w-3.5" />
+                )}
+              </button>
             </div>
 
             {/* Discreet Error Handling */}
