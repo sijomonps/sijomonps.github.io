@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { FiX, FiCheck, FiAlertCircle } from 'react-icons/fi';
 import { supabase } from '@/lib/supabaseClient';
 import { TransactionType, Transaction } from '@/lib/financeTypes';
-import { getTodayLocalDateString } from '@/lib/financeUtils';
+import { getTodayLocalDateString, parseFormattedAmount } from '@/lib/financeUtils';
+import AmountInput from './AmountInput';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -61,8 +62,8 @@ export default function TransactionModal({
       return;
     }
 
-    const numericAmount = parseFloat(amount);
-    if (isNaN(numericAmount) || numericAmount <= 0) {
+    const numericAmount = parseFormattedAmount(amount);
+    if (numericAmount <= 0) {
       setErrorMessage('Amount must be a positive number greater than 0.');
       return;
     }
@@ -173,22 +174,13 @@ export default function TransactionModal({
             >
               Amount (₹)
             </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-500 font-medium">
-                ₹
-              </span>
-              <input
-                id="transaction-amount"
-                type="number"
-                step="0.01"
-                min="0.01"
-                required
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="w-full rounded-xl border border-white/10 bg-black/40 pl-8 pr-3.5 py-2.5 text-base sm:text-sm text-foreground placeholder-zinc-600 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
-              />
-            </div>
+            <AmountInput
+              id="transaction-amount"
+              value={amount}
+              onChange={setAmount}
+              placeholder="0.00"
+              required
+            />
           </div>
 
           {/* Field 3: Date */}

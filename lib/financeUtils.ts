@@ -44,6 +44,57 @@ export const formatCompactINR = (amount: number): string => {
 };
 
 /**
+ * Format a numeric string with Indian numbering system commas while user types.
+ * Supports decimals (e.g. '1,250.50', '10,00,000').
+ */
+export const formatIndianNumberString = (rawValue: string): string => {
+  if (!rawValue) return '';
+  const clean = rawValue.replace(/[^\d.]/g, '');
+  if (!clean) return '';
+
+  const firstDotIndex = clean.indexOf('.');
+  let intPart = '';
+  let decPart: string | null = null;
+
+  if (firstDotIndex !== -1) {
+    intPart = clean.slice(0, firstDotIndex);
+    const rest = clean.slice(firstDotIndex + 1).replace(/\./g, '');
+    decPart = rest.slice(0, 2);
+  } else {
+    intPart = clean;
+  }
+
+  // Strip extraneous leading zeros
+  if (intPart.length > 1) {
+    intPart = intPart.replace(/^0+(?=\d)/, '');
+  }
+
+  let formattedInt = '';
+  if (intPart.length > 3) {
+    const lastThree = intPart.slice(-3);
+    const remaining = intPart.slice(0, -3);
+    const withCommas = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    formattedInt = `${withCommas},${lastThree}`;
+  } else {
+    formattedInt = intPart;
+  }
+
+  if (decPart !== null) {
+    return `${formattedInt || '0'}.${decPart}`;
+  }
+  return formattedInt;
+};
+
+/**
+ * Parse an Indian formatted amount string into a clean positive float.
+ */
+export const parseFormattedAmount = (str: string): number => {
+  if (!str) return 0;
+  const num = parseFloat(str.replace(/,/g, ''));
+  return isNaN(num) ? 0 : num;
+};
+
+/**
  * Get current date as 'YYYY-MM-DD' formatted in user's local timezone.
  */
 export const getTodayLocalDateString = (): string => {

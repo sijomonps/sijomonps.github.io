@@ -9,19 +9,20 @@ import {
   calculateMonthlyTableSummaries,
 } from '@/lib/financeUtils';
 import {
-  FiTrendingUp,
-  FiTrendingDown,
   FiActivity,
   FiCalendar,
+  FiChevronLeft,
+  FiChevronRight,
 } from 'react-icons/fi';
 
 interface SummaryViewProps {
-  metrics: FinanceMetrics;
+  metrics?: FinanceMetrics;
   transactions: Transaction[];
 }
 
+const BREAKDOWN_PAGE_SIZE = 6;
+
 export default function SummaryView({
-  metrics,
   transactions,
 }: SummaryViewProps) {
   // Chart range controls: '6M' | '1Y' | 'ALL'
@@ -36,6 +37,20 @@ export default function SummaryView({
   const tableData = useMemo(() => {
     return calculateMonthlyTableSummaries(transactions);
   }, [transactions]);
+
+  // Breakdown pagination state
+  const [breakdownPage, setBreakdownPage] = useState(1);
+  const totalBreakdownPages = Math.ceil(tableData.length / BREAKDOWN_PAGE_SIZE) || 1;
+  const safeBreakdownPage = Math.min(Math.max(1, breakdownPage), totalBreakdownPages);
+
+  const breakdownStartIndex = (safeBreakdownPage - 1) * BREAKDOWN_PAGE_SIZE;
+  const breakdownEndIndex = Math.min(
+    breakdownStartIndex + BREAKDOWN_PAGE_SIZE,
+    tableData.length
+  );
+  const paginatedTableData = useMemo(() => {
+    return tableData.slice(breakdownStartIndex, breakdownEndIndex);
+  }, [tableData, breakdownStartIndex, breakdownEndIndex]);
 
   // Interactive selected candle key
   const [selectedMonthKey, setSelectedMonthKey] = useState<string | null>(null);
@@ -113,63 +128,7 @@ export default function SummaryView({
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* 1. Overall Totals */}
-      <div>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-3 sm:mb-4">
-          Overall Totals
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
-          {/* All-time Income */}
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5 backdrop-blur-md">
-            <div className="flex items-center justify-between text-[11px] sm:text-xs uppercase tracking-wider text-zinc-400 font-semibold mb-1.5 sm:mb-2">
-              <span>All-Time Income</span>
-              <FiTrendingUp className="h-4 w-4 text-emerald-400 shrink-0" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-400 font-mono tabular-nums truncate">
-              {formatINR(metrics.totalEarned)}
-            </div>
-            <p className="mt-1 text-[10px] sm:text-[11px] text-zinc-500">
-              Cumulative lifetime earnings
-            </p>
-          </div>
-
-          {/* All-time Expenses */}
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5 backdrop-blur-md">
-            <div className="flex items-center justify-between text-[11px] sm:text-xs uppercase tracking-wider text-zinc-400 font-semibold mb-1.5 sm:mb-2">
-              <span>All-Time Expenses</span>
-              <FiTrendingDown className="h-4 w-4 text-rose-400 shrink-0" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold tracking-tight text-rose-400 font-mono tabular-nums truncate">
-              {formatINR(metrics.allTimeExpenses)}
-            </div>
-            <p className="mt-1 text-[10px] sm:text-[11px] text-zinc-500">
-              Cumulative lifetime expenses
-            </p>
-          </div>
-
-          {/* Available Balance */}
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5 backdrop-blur-md">
-            <div className="flex items-center justify-between text-[11px] sm:text-xs uppercase tracking-wider text-zinc-400 font-semibold mb-1.5 sm:mb-2">
-              <span>Available Balance</span>
-              <span
-                className={`text-[10px] sm:text-xs font-mono font-bold ${
-                  metrics.availableBalance >= 0 ? 'text-cyan-400' : 'text-rose-400'
-                }`}
-              >
-                {metrics.availableBalance >= 0 ? 'NET +' : 'NET -'}
-              </span>
-            </div>
-            <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-mono tabular-nums truncate">
-              {formatINR(metrics.availableBalance)}
-            </div>
-            <p className="mt-1 text-[10px] sm:text-[11px] text-zinc-500">
-              All-time income minus expenses
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Candlestick Financial Chart Card */}
+      {/* 1. Candlestick Financial Chart Card */}
       <div className="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 sm:p-6 backdrop-blur-md shadow-2xl overflow-hidden">
         {/* Card Header: Title, Range Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -588,7 +547,7 @@ export default function SummaryView({
         )}
       </div>
 
-      {/* 3. Additional Monthly Summary Breakdown Table */}
+      {/* 2. Additional Monthly Summary Breakdown Table */}
       <div className="rounded-2xl border border-white/10 bg-zinc-900/60 overflow-hidden backdrop-blur-md">
         <div className="border-b border-white/10 px-4 sm:px-5 py-3.5 sm:py-4 flex items-center justify-between">
           <div>
@@ -612,7 +571,7 @@ export default function SummaryView({
           <>
             {/* Mobile View (< 640px): Compact, Overflow-free Card Rows */}
             <div className="block sm:hidden divide-y divide-white/5">
-              {tableData.map((s) => (
+              {paginatedTableData.map((s) => (
                 <div key={s.monthKey} className="p-3.5 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-xs text-foreground">
@@ -659,7 +618,7 @@ export default function SummaryView({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 font-mono">
-                  {tableData.map((s) => (
+                  {paginatedTableData.map((s) => (
                     <tr
                       key={s.monthKey}
                       className="hover:bg-white/[0.02] transition"
@@ -685,6 +644,49 @@ export default function SummaryView({
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Controls Bar */}
+            <div className="flex flex-col min-[420px]:flex-row items-center justify-between gap-2.5 border-t border-white/10 px-4 sm:px-5 py-3 text-xs text-zinc-400 bg-white/[0.01]">
+              <div className="font-mono text-[11px] sm:text-xs">
+                Showing{' '}
+                <span className="text-zinc-200 font-semibold">
+                  {breakdownStartIndex + 1}–{breakdownEndIndex}
+                </span>{' '}
+                of{' '}
+                <span className="text-zinc-200 font-semibold">
+                  {tableData.length}
+                </span>{' '}
+                {tableData.length === 1 ? 'month' : 'months'}
+              </div>
+
+              <div className="flex items-center justify-between min-[420px]:justify-end gap-3 w-full min-[420px]:w-auto">
+                <span className="text-[11px] sm:text-xs font-mono text-zinc-500">
+                  Page {safeBreakdownPage} of {totalBreakdownPages}
+                </span>
+                <div className="inline-flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setBreakdownPage((p) => Math.max(1, p - 1))}
+                    disabled={safeBreakdownPage <= 1}
+                    className="p-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground text-zinc-300 disabled:opacity-30 disabled:pointer-events-none transition min-w-[32px] min-h-[32px] flex items-center justify-center"
+                    aria-label="Previous page"
+                    title="Previous page"
+                  >
+                    <FiChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdownPage((p) => Math.min(totalBreakdownPages, p + 1))}
+                    disabled={safeBreakdownPage >= totalBreakdownPages}
+                    className="p-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground text-zinc-300 disabled:opacity-30 disabled:pointer-events-none transition min-w-[32px] min-h-[32px] flex items-center justify-center"
+                    aria-label="Next page"
+                    title="Next page"
+                  >
+                    <FiChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </>
         )}

@@ -18,6 +18,7 @@ import PasswordScreen from './components/PasswordScreen';
 import DashboardView from './components/DashboardView';
 import SummaryView from './components/SummaryView';
 import TransactionModal from './components/TransactionModal';
+import EditTransactionModal from './components/EditTransactionModal';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 
 export default function FinancePage() {
@@ -35,6 +36,7 @@ export default function FinancePage() {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalType, setAddModalType] = useState<TransactionType>('income');
+  const [editTarget, setEditTarget] = useState<Transaction | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
 
   // Check Supabase session on mount
@@ -265,6 +267,7 @@ export default function FinancePage() {
             metrics={metrics}
             transactions={transactions}
             onOpenAddModal={handleOpenAddModal}
+            onOpenEditModal={(tx) => setEditTarget(tx)}
             onRequestDelete={(tx) => setDeleteTarget(tx)}
             isLoading={isLoadingTransactions}
           />
@@ -281,6 +284,16 @@ export default function FinancePage() {
         isOpen={isAddModalOpen}
         type={addModalType}
         onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          fetchTransactions();
+        }}
+      />
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal
+        isOpen={Boolean(editTarget)}
+        transaction={editTarget}
+        onClose={() => setEditTarget(null)}
         onSuccess={() => {
           fetchTransactions();
         }}
