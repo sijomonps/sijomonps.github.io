@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FiLock, FiEye, FiEyeOff, FiAlertTriangle, FiArrowLeft } from 'react-icons/fi';
+import { FiLock, FiEye, FiEyeOff, FiArrowRight, FiArrowLeft, FiAlertTriangle } from 'react-icons/fi';
 import { supabase, financeLoginEmail, isSupabaseConfigured } from '@/lib/supabaseClient';
 
 interface PasswordScreenProps {
@@ -10,17 +10,27 @@ interface PasswordScreenProps {
 }
 
 export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
+  const [email, setEmail] = useState(financeLoginEmail || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const needsEmailInput = !financeLoginEmail;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    if (!isSupabaseConfigured || !supabase || !financeLoginEmail) {
-      setErrorMessage('Supabase credentials or login email are not configured.');
+    const targetEmail = (financeLoginEmail || email).trim();
+
+    if (!isSupabaseConfigured || !supabase) {
+      setErrorMessage('Supabase is not configured.');
+      return;
+    }
+
+    if (!targetEmail) {
+      setErrorMessage('Please enter an email address.');
       return;
     }
 
@@ -31,175 +41,137 @@ export default function PasswordScreen({ onSuccess }: PasswordScreenProps) {
 
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email: financeLoginEmail,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: targetEmail,
         password: password,
       });
 
-      if (error) {
-        setErrorMessage('Invalid password or authentication failed. Please try again.');
+      if (error || !data?.session) {
+        setErrorMessage(error?.message || 'Invalid credentials.');
       } else {
         onSuccess();
       }
     } catch {
-      setErrorMessage('An unexpected error occurred during authentication.');
+      setErrorMessage('Authentication failed.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // If Supabase environment variables are missing, render a friendly setup message
-  if (!isSupabaseConfigured || !financeLoginEmail) {
+  // Missing configuration fallback
+  if (!isSupabaseConfigured) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12 relative z-10">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
-          <div className="flex items-center gap-2.5 text-amber-400 mb-3.5">
-            <FiAlertTriangle className="h-5 w-5 shrink-0" />
-            <h2 className="text-base sm:text-lg font-semibold tracking-wide text-foreground">
-              Configuration Required
-            </h2>
-          </div>
-          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-5">
-            The Personal Finance module requires Supabase environment variables before authentication can be enabled.
+      <div className="min-h-screen flex items-center justify-center px-4 py-12 relative z-10">
+        <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-zinc-900/60 p-6 text-center">
+          <FiAlertTriangle className="h-5 w-5 text-amber-400 mx-auto mb-3" />
+          <h2 className="text-sm font-medium text-foreground mb-1">Configuration Required</h2>
+          <p className="text-xs text-zinc-400 mb-5">
+            Supabase environment variables are missing.
           </p>
-          <div className="rounded-xl bg-black/40 border border-white/5 p-3.5 text-xs font-mono space-y-2 text-zinc-300">
-            <div>
-              <span className="text-zinc-500">NEXT_PUBLIC_SUPABASE_URL</span>
-              <div className="text-amber-300/80">
-                {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✓ Configured' : '✗ Missing'}
-              </div>
-            </div>
-            <div>
-              <span className="text-zinc-500">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</span>
-              <div className="text-amber-300/80">
-                {process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? '✓ Configured' : '✗ Missing'}
-              </div>
-            </div>
-            <div>
-              <span className="text-zinc-500">NEXT_PUBLIC_FINANCE_LOGIN_EMAIL</span>
-              <div className="text-amber-300/80">
-                {financeLoginEmail ? '✓ Configured' : '✗ Missing'}
-              </div>
-            </div>
-          </div>
-          <div className="mt-5 flex flex-col gap-3">
-            <Link
-              href="/"
-              className="min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs sm:text-sm font-medium text-foreground hover:bg-white/10 transition"
-            >
-              <FiArrowLeft className="h-4 w-4" /> Return to Portfolio
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-foreground transition"
+          >
+            <FiArrowLeft className="h-3.5 w-3.5" /> Return to Portfolio
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12 relative z-10">
-      <div className="w-full max-w-md">
-        {/* Header Branding */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl border border-white/10 bg-zinc-900/90 text-foreground shadow-lg mb-3">
-            <FiLock className="h-5 w-5 text-emerald-400" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative z-10">
+      <div className="w-full max-w-sm space-y-6">
+        {/* Calm, Minimal Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-zinc-900/50 text-zinc-300 mb-1">
+            <FiLock className="h-4 w-4" />
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl tracking-wider uppercase font-bold text-foreground">
-            FINANCE
+          <h1 className="text-base sm:text-lg font-medium tracking-tight text-foreground">
+            Personal Area Authentication
           </h1>
-          <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-zinc-400">
-            Enter master password to access your dashboard
-          </p>
         </div>
 
-        {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            {errorMessage && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
-                <FiAlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-rose-400" />
-                <span className="leading-snug">{errorMessage}</span>
+        {/* Minimal Login Card */}
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-5 sm:p-6 shadow-xl backdrop-blur-md">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {/* Email Field only if not configured via environment */}
+            {needsEmailInput && (
+              <div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  autoComplete="email"
+                  required
+                  disabled={isLoading}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-foreground placeholder-zinc-500 focus:border-white/30 focus:outline-none transition"
+                />
               </div>
             )}
 
-            <div>
-              <label
-                htmlFor="finance-password"
-                className="block text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-2"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="finance-password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  autoComplete="current-password"
-                  autoFocus
-                  disabled={isLoading}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-3 pr-12 text-base sm:text-sm text-foreground placeholder-zinc-600 focus:border-emerald-500/60 focus:outline-none focus:ring-1 focus:ring-emerald-500/60 disabled:opacity-50 transition"
-                />
+            {/* Password input with toggle and small submit arrow */}
+            <div className="relative flex items-center">
+              <input
+                id="personal-area-password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete="current-password"
+                autoFocus
+                disabled={isLoading}
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-3.5 pr-20 py-2.5 text-sm text-foreground placeholder-zinc-500 focus:border-white/30 focus:outline-none transition"
+              />
+              <div className="absolute right-1.5 flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-zinc-400 hover:text-foreground transition rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center"
+                  className="p-1.5 text-zinc-500 hover:text-zinc-300 transition rounded-lg"
                 >
                   {showPassword ? (
-                    <FiEyeOff className="h-4 w-4" />
+                    <FiEyeOff className="h-3.5 w-3.5" />
                   ) : (
-                    <FiEye className="h-4 w-4" />
+                    <FiEye className="h-3.5 w-3.5" />
+                  )}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading || !password}
+                  aria-label="Submit password"
+                  title="Submit"
+                  className="h-7 w-7 rounded-lg bg-foreground text-background hover:bg-zinc-200 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
+                >
+                  {isLoading ? (
+                    <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                  ) : (
+                    <FiArrowRight className="h-3.5 w-3.5" />
                   )}
                 </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading || !password}
-              className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-xs sm:text-sm font-semibold text-background hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-foreground/20 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md"
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="h-4 w-4 animate-spin text-background"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    />
-                  </svg>
-                  <span>Authenticating...</span>
-                </>
-              ) : (
-                <span>Unlock Dashboard</span>
-              )}
-            </button>
+            {/* Discreet Error Handling */}
+            {errorMessage && (
+              <p className="text-xs text-rose-400 text-center pt-1 animate-in fade-in">
+                {errorMessage}
+              </p>
+            )}
           </form>
 
-          <div className="mt-5 pt-4 sm:pt-5 border-t border-white/5 flex items-center justify-between text-xs text-zinc-500">
+          {/* Discreet Footer link */}
+          <div className="mt-5 pt-4 border-t border-white/5 text-center">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 hover:text-zinc-300 transition"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition"
             >
-              <FiArrowLeft className="h-3.5 w-3.5" /> Back to Portfolio
+              <FiArrowLeft className="h-3 w-3" />
+              <span>Return to Portfolio</span>
             </Link>
-            <span className="text-[11px] text-zinc-600">Encrypted via Supabase</span>
           </div>
         </div>
       </div>

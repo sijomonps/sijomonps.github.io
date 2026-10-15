@@ -300,7 +300,16 @@ export const calculateCandlestickData = (
     } else {
       monthKeys = getMonthsBetween(earliestMonthKey, latestMonthKey);
       if (monthKeys.length < 6) {
-        monthKeys = getRecentMonthKeys(6);
+        const [eY, eM] = earliestMonthKey.split('-').map(Number);
+        const needed = 6 - monthKeys.length;
+        const padKeys: string[] = [];
+        for (let i = needed; i >= 1; i--) {
+          const d = new Date(eY, eM - 1 - i, 1);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          padKeys.push(`${y}-${m}`);
+        }
+        monthKeys = [...padKeys, ...monthKeys];
       }
     }
   }

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
+import { FiLock } from "react-icons/fi"
 
 const navItems = [
   { name: "Home", href: "#home" },
@@ -96,6 +98,23 @@ export default function Navbar() {
           </ul>
         </div>
       </nav>
+
+      {/* Small subtle private area icon */}
+      <div className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 flex items-center">
+        <Link
+          href="/f/"
+          aria-label="Personal Area"
+          className="group relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-white/25 transition backdrop-blur-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+        >
+          <FiLock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute right-0 top-full mt-2 hidden whitespace-nowrap rounded-lg border border-white/10 bg-zinc-950/95 px-2.5 py-1 text-[11px] font-mono text-zinc-300 opacity-0 shadow-xl backdrop-blur-md transition-all duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 sm:inline-block"
+          >
+            Personal Area
+          </span>
+        </Link>
+      </div>
     </header>
   )
 }

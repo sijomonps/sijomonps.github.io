@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Finance Dashboard | Sijomon P S',
-  description: 'Minimal Personal Finance Dashboard',
+  title: 'Personal Area | Sijomon P S',
+  description: 'Private Personal Area — Finance and To-do Management',
   robots: {
     index: false,
     follow: false,
