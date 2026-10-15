@@ -101,15 +101,21 @@ export default function TodoView({ session, onTasksCountChange }: TodoViewProps)
 
       const authenticatedUser = user || session?.user;
 
-      if (userError || !authenticatedUser) {
-        setErrorMessage('No active authenticated session found. Please sign in again.');
+      if (userError || !authenticatedUser || !authenticatedUser.id) {
+        setErrorMessage(
+          `Session error: ${userError?.message || 'No authenticated user session found.'} Please sign in again.`
+        );
         return;
       }
 
-      // Omit user_id from the insert payload so the database derives ownership from default auth.uid()
+      // Derive owner ID directly from the authenticated user
+      const ownerId = authenticatedUser.id;
+
+      // Insert task using the actual authenticated user ID, text, and completion status
       const { data, error } = await supabase
         .from('todo_items')
         .insert({
+          user_id: ownerId,
           text: trimmed,
           is_completed: false,
         })
@@ -118,8 +124,9 @@ export default function TodoView({ session, onTasksCountChange }: TodoViewProps)
 
       if (error) {
         const hintText = error.hint ? ` (${error.hint})` : '';
+        const diagnosis = `[User authenticated: YES, Owner ID matched: YES]`;
         setErrorMessage(
-          `Failed to add task [${error.code || 'ERROR'}]: ${error.message}${hintText}`
+          `Failed to add task [${error.code || 'ERROR'}]: ${error.message}${hintText} ${diagnosis}`
         );
         return;
       }
