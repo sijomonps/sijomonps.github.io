@@ -12,7 +12,8 @@ const sections: SectionItem[] = [
   { id: 'home', name: 'Home' },
   { id: 'works', name: 'Works' },
   { id: 'about', name: 'About' },
-  { id: 'experience', name: 'Highlights' },
+  { id: 'highlights', name: 'Highlights' },
+  { id: 'recommendations', name: 'Recommendations' },
   { id: 'skills', name: 'Skills' },
   { id: 'education', name: 'Education' },
   { id: 'contact', name: 'Contact' },
@@ -48,7 +49,7 @@ export default function SectionJumpToggle() {
           return
         }
 
-        const sectionTop = element.offsetTop - NAVBAR_OFFSET
+        const sectionTop = element.getBoundingClientRect().top + window.scrollY - NAVBAR_OFFSET
         if (probePosition >= sectionTop) {
           activeIndex = index
         }

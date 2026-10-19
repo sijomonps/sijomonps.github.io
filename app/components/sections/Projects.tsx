@@ -227,7 +227,7 @@ export default function Projects() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: false, amount: 0.15 }}
-      className="w-full py-20 sm:py-28 relative overflow-hidden"
+      className="w-full py-20 sm:py-28 relative overflow-hidden scroll-mt-16 sm:scroll-mt-20"
     >
       {/* Centered Section Header */}
       <motion.div

@@ -238,7 +238,7 @@ export default function Recommendations() {
    */
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({})
 
-  // Active recommendation index (0, 1, or 2)
+  // Active recommendation index (0-indexed)
   const [activeIndex, setActiveIndex] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
   const [timerResetKey, setTimerResetKey] = useState(0)
@@ -347,7 +347,10 @@ export default function Recommendations() {
   }, [isReducedMotion, isAnyExpanded, isTouched, timerResetKey])
 
   return (
-    <div className="relative z-10 w-full mt-16 sm:mt-24 select-none">
+    <div
+      id="recommendations"
+      className="relative z-10 w-full mt-16 sm:mt-24 select-none scroll-mt-20 sm:scroll-mt-24"
+    >
       {/* ── Section heading ── */}
       <motion.div
         initial="hidden"

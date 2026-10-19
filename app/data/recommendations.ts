@@ -57,4 +57,19 @@ export const recommendations: Recommendation[] = [
       'As a Co-Organizer of TEDxKCMT, I had the opportunity to work closely with Sijomon P. S. as part of our Technical Team. He took the initiative to build our event website and played an active role in creating Instagram Reels, helping our page reach millions of views.\n\nSijomon is responsible, quick to learn, and genuinely passionate about technology. He works exceptionally well under pressure, takes ownership of his work, and is a great team player. I’m happy to recommend him for opportunities in tech and web development and am confident he would be a valuable addition to any team.',
     avatar: '/recommendations/varsha-s-chandran.webp',
   },
+  {
+    id: 'hariyapriya-sajeev',
+    name: 'Hariyapriya Sajeev',
+    initials: 'HS',
+    role: 'MBA Candidate | Marketing & Finance | BCom Graduate',
+    institution: 'Hariyapriya and Sijomon studied together',
+    date: 'October 14, 2026',
+    recommendation:
+      'My friend Sijo did an excellent job creating a website for my small business. I’m really happy with the final result and the quality of his work. Highly recommend him for website development!',
+    previewText:
+      'My friend Sijo did an excellent job creating a website for my small business. I’m really happy with the final result and the quality of his work.',
+    fullText:
+      'My friend Sijo did an excellent job creating a website for my small business. I’m really happy with the final result and the quality of his work. Highly recommend him for website development!',
+    avatar: '/recommendations/hariyapriya-sajeev.webp',
+  },
 ]

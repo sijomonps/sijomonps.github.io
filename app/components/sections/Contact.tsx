@@ -46,7 +46,7 @@ const contactItems: ContactItem[] = [
 
 export default function Contact() {
   return (
-    <section id="contact" className="container mx-auto px-6 sm:px-10 md:px-12">
+    <section id="contact" className="container mx-auto px-6 sm:px-10 md:px-12 scroll-mt-16 sm:scroll-mt-20">
       <div className="min-h-screen flex flex-col items-center justify-center py-16 md:py-20 relative overflow-hidden">
         <GradientBackground 
           sectionId="contact"

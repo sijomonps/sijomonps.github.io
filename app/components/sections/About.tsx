@@ -8,7 +8,7 @@ export default function About() {
   const assetPath = (path: string) => `${basePath}${path}`
 
   return (
-    <section id="about" className="relative min-h-screen w-full flex items-center justify-center px-6 py-20 sm:px-12">
+    <section id="about" className="relative min-h-screen w-full flex items-center justify-center px-6 py-20 sm:px-12 scroll-mt-16 sm:scroll-mt-20">
       <div className="relative max-w-3xl w-full">
         <div className="space-y-12">
           <AnimatedText>

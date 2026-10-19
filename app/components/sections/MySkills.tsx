@@ -81,7 +81,7 @@ const skillsByCategory = [
 
 export default function MySkills() {
   return (
-    <section id="skills" className="min-h-screen w-full flex items-center justify-center px-6 py-16 sm:px-12">
+    <section id="skills" className="min-h-screen w-full flex items-center justify-center px-6 py-16 sm:px-12 scroll-mt-16 sm:scroll-mt-20">
       <div className="container mx-auto max-w-6xl">
         <AnimatedText>
           <h2 className="font-display text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold mb-10 sm:mb-14 text-center">

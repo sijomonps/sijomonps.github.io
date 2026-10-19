@@ -443,20 +443,20 @@ export default function Experience() {
 
   return (
     <motion.section
-      id="experience"
+      id="highlights"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: false, amount: 0.15 }}
       onViewportEnter={handleViewportEnter}
       onViewportLeave={handleViewportLeave}
-      className="w-full py-20 sm:py-28 relative overflow-hidden"
+      className="w-full py-20 sm:py-28 relative overflow-hidden scroll-mt-16 sm:scroll-mt-20"
     >
       {/* Anchor alias so both #highlights and #experience navigate cleanly */}
-      <div id="highlights" className="sr-only" aria-hidden="true" tabIndex={-1} />
+      <div id="experience" className="sr-only" aria-hidden="true" tabIndex={-1} />
 
       {/* Ambient background lighting */}
       <GradientBackground
-        sectionId="experience"
+        sectionId="highlights"
         gradientColors={{
           start: '#1E3A8A',
           end: '#0F766E',
