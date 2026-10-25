@@ -471,7 +471,7 @@ export default function Experience() {
               variants={headingVariants}
               className="font-display text-4xl min-[360px]:text-5xl sm:text-7xl md:text-8xl tracking-wider uppercase font-bold text-foreground leading-none text-center"
             >
-              HIGHLIGHTS
+              Gallery 
             </motion.h2>
           </div>
 
